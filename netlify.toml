@@ -1,0 +1,9 @@
+# Netlify 部署配置（绑定 GitHub 后自动触发构建）
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
