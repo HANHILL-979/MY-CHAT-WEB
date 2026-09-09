@@ -22,7 +22,7 @@ const themeClass = computed(() => (theme.value === 'male' ? 'theme-male' : 'them
 const myName = computed(() => displayName.value)
 const myAvatar = computed(() => identityProfiles[identity.value].img)
 const partnerName = computed(() => (identity.value === 'user_a' ? '小椰宝' : '大椰树'))
-const roleLabel = computed(() => (identity.value === 'user_a' ? '男主角' : '女主角'))
+const roleLabel = computed(() => (identity.value === 'user_a' ? '女主角' : '男主角'))
 const roleDesc = computed(() =>
   theme.value === 'male' ? '深邃、精密、秩序感' : '柔和、陪伴、治愈感'
 )
@@ -190,7 +190,7 @@ onUnmounted(() => {
         <div class="menu-title">我们的专属密码</div>
         <div class="menu-item">
           <span class="label">相爱纪念日</span>
-          <span class="value">2026-01-13</span>
+          <span class="value">2025-12-26</span>
         </div>
         <div class="menu-item">
           <span class="label">心尖上的人</span>

@@ -106,7 +106,7 @@ onUnmounted(() => {
 <template>
   <div class="app-shell" :class="themeClass">
     <!-- 首页：主题选择 + 功能入口（复刻 Linda1 index.vue） -->
-    <div v-if="showHome" class="home-overlay">
+    <div v-if="showHome" class="home-overlay" :class="themeClass">
       <div class="orb orb-one"></div>
       <div class="orb orb-two"></div>
       <div class="hero">
@@ -117,12 +117,12 @@ onUnmounted(() => {
 
       <div class="mode-switch">
         <div class="mode-card" :class="{ active: theme === 'female' }" @click="pickTheme('female')">
-          <span class="mode-title">女性视角</span>
+          <span class="mode-title">大椰树 · 女生</span>
           <span class="mode-desc">治愈系 · 云端呼吸</span>
         </div>
         <div class="mode-card" :class="{ active: theme === 'male' }" @click="pickTheme('male')">
-          <span class="mode-title">男性视角</span>
-          <span class="mode-desc">极客感 · 赛博秩序</span>
+          <span class="mode-title">小椰宝 · 男生</span>
+          <span class="mode-desc">日落玻璃 · 苹果质感</span>
         </div>
       </div>
 
@@ -200,7 +200,10 @@ onUnmounted(() => {
   background: #0f0f18;
 }
 .app-shell.theme-male {
-  background: var(--ios-bg); /* iOS 系统背景：真黑 */
+  /* 日落实景背景 + 顶部轻/底部重的暗化渐变，保证白字与玻璃卡可读 */
+  background:
+    linear-gradient(180deg, rgba(8, 12, 28, 0.30) 0%, rgba(8, 12, 28, 0.46) 55%, rgba(8, 12, 28, 0.62) 100%),
+    url('/sunset-bg.jpg') center / cover no-repeat;
 }
 
 /* ============ 首页（Linda1 index.vue 复刻） ============ */
@@ -213,7 +216,7 @@ onUnmounted(() => {
   background: linear-gradient(180deg, #fffdf5 0%, #ffe9ef 100%);
 }
 .home-overlay.theme-male {
-  background: var(--ios-bg);
+  background: transparent; /* 透出日落实景 */
 }
 
 .orb {
@@ -290,7 +293,8 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.76);
 }
 .theme-male .mode-card {
-  background: var(--ios-surface);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 16px;
 }
 .mode-card.active {
@@ -327,11 +331,12 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.84);
 }
 .theme-male .entry-item {
-  background: var(--ios-surface);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 16px;
 }
 .theme-male .entry-item:active {
-  background: var(--ios-surface-3);
+  background: rgba(255, 255, 255, 0.24);
 }
 
 /* ============ 主内容区 ============ */
@@ -347,16 +352,16 @@ onUnmounted(() => {
   background: #ffffff;
 }
 .theme-male .app-tabbar {
-  background: rgba(28, 28, 30, 0.92);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-top: 0.5px solid var(--ios-separator);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.2);
 }
 .theme-male .app-tabbar :deep(.van-tabbar-item) {
-  color: var(--ios-text-2);
+  color: rgba(255, 255, 255, 0.72);
 }
 .theme-male .app-tabbar :deep(.van-tabbar-item--active) {
-  color: var(--ios-accent);
+  color: #ffffff;
 }
 .tab-icon {
   font-size: 20px;

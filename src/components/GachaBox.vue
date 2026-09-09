@@ -143,8 +143,11 @@ function goBack() {
   background: linear-gradient(135deg, #fffdf5 0%, #ffe7ef 100%);
   color: #4b3046;
 }
+/* 全屏浮层直接铺日落实景，与 app-shell 同款暗化渐变，避免宽屏露出黑边 */
 .theme-male {
-  background: var(--ios-bg);
+  background:
+    linear-gradient(180deg, rgba(8, 12, 28, 0.30) 0%, rgba(8, 12, 28, 0.46) 55%, rgba(8, 12, 28, 0.62) 100%),
+    url('/sunset-bg.jpg') center / cover no-repeat;
   color: var(--ios-text);
 }
 .theme-male::before {

@@ -786,7 +786,8 @@ onUnmounted(() => {
   padding: 18px;
   border-radius: 16px;
   background: var(--ios-surface);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.22);
   position: relative;
   overflow: hidden;
   animation: heroRise 0.5s cubic-bezier(0.23, 1, 0.32, 1) both;
@@ -815,7 +816,7 @@ onUnmounted(() => {
   cursor: pointer;
 }
 .theme-male .male-stats { margin: 0 16px 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; animation: heroRise 0.5s cubic-bezier(0.23, 1, 0.32, 1) 0.08s both; flex-shrink: 0; }
-.theme-male .stat-card { padding: 12px 8px; border-radius: var(--ios-radius); background: var(--ios-surface); text-align: center; }
+.theme-male .stat-card { padding: 12px 8px; border-radius: var(--ios-radius); background: var(--ios-surface); border: 1px solid rgba(255, 255, 255, 0.14); text-align: center; }
 .theme-male .stat-label { display: block; font-size: 11px; color: var(--ios-text-2); }
 .theme-male .stat-value { display: block; margin-top: 4px; font-size: 17px; font-weight: 700; color: var(--ios-text); }
 
@@ -939,7 +940,8 @@ onUnmounted(() => {
   margin-bottom: 14px;
   border-radius: 16px;
   background: var(--ios-surface);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 .theme-male .male-card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
 .theme-male .male-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -985,7 +987,7 @@ onUnmounted(() => {
   cursor: pointer;
 }
 .theme-female .fab-btn { background: linear-gradient(135deg, #ff8ab2 0%, #7b5cdd 100%); border-radius: 50%; box-shadow: 0 14px 28px rgba(123, 92, 221, 0.28); }
-.theme-male .fab-btn { background: var(--ios-accent); border-radius: 50%; box-shadow: 0 8px 20px rgba(10, 132, 255, 0.35); }
+.theme-male .fab-btn { background: var(--ios-accent); border-radius: 50%; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); }
 
 /* 数据库未就绪提示 */
 .missing-tip {
@@ -1013,7 +1015,7 @@ onUnmounted(() => {
 }
 .modal-box { width: 100%; padding: 20px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
 .theme-female .modal-box { background: rgba(255, 255, 255, 0.94); border-radius: 26px; box-shadow: 0 20px 45px rgba(24, 15, 48, 0.24); }
-.theme-male .modal-box { background: var(--ios-surface); border-radius: 16px; box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5); }
+.theme-male .modal-box { background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3); }
 .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 14px; display: block; text-align: center; }
 .theme-female .modal-title { color: #2f2545; }
 .theme-male .modal-title { color: var(--ios-text); }

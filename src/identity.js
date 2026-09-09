@@ -3,10 +3,10 @@ import { ref, computed } from 'vue'
 const STORAGE_KEY = 'my-space-identity'
 
 // 双人资料：展示名 + 头像 + 照片头像 + 性别主题（数据库标识仍为 user_a/user_b，不动历史数据）
-// 角色映射复刻 Linda1：大椰树=boy(男性视角/赛博主题)，小椰宝=girl(女性视角/治愈主题)
+// 性别映射：大椰树=girl(女生/治愈主题)，小椰宝=boy(男生/玻璃日落主题)
 const PROFILES = {
-  user_a: { name: '大椰树', avatar: '🌴', img: '/static/photo8.jpg', role: 'boy' },
-  user_b: { name: '小椰宝', avatar: '🥥', img: '/static/photo1.jpg', role: 'girl' },
+  user_a: { name: '大椰树', avatar: '🌴', img: '/static/photo8.jpg', role: 'girl' },
+  user_b: { name: '小椰宝', avatar: '🥥', img: '/static/photo1.jpg', role: 'boy' },
 }
 const ID_TO_NAME = {
   user_a: '大椰树',

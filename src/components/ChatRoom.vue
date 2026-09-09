@@ -30,11 +30,11 @@ let saveTimer = null
 
 const themeClass = computed(() => (theme.value === 'male' ? 'theme-male' : 'theme-female'))
 
-// 壁纸背景（无壁纸时使用主题渐变兜底）
+// 壁纸背景（男性主题无壁纸时透明，透出全局日落实景）
 const backgroundStyle = computed(() => {
   const fallback =
     theme.value === 'male'
-      ? 'linear-gradient(160deg, #0e121a 0%, #101b2a 48%, #0a0f17 100%)'
+      ? 'none'
       : 'linear-gradient(160deg, #fffdf5 0%, #ffe7ef 50%, #fff3d9 100%)'
   return { backgroundImage: chatBg.value ? `url(${chatBg.value})` : fallback }
 })
@@ -562,7 +562,7 @@ onUnmounted(() => {
   cursor: pointer;
 }
 .theme-female .top-chip { background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 183, 197, 0.28); color: #7a5564; }
-.theme-male .top-chip { background: rgba(28, 28, 30, 0.72); border: none; color: var(--ios-text-2); border-radius: 999px; }
+.theme-male .top-chip { background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.85); border-radius: 999px; }
 
 /* 消息列表 */
 .chat-list {
@@ -625,13 +625,13 @@ onUnmounted(() => {
   color: #5a3947;
   border-radius: 20px 20px 8px 20px;
 }
-.theme-male .left-bubble { background: var(--ios-surface-2); color: var(--ios-text); border-radius: 20px 20px 20px 6px; border: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.theme-male .left-bubble { background: rgba(255, 255, 255, 0.16); color: #ffffff; border-radius: 20px 20px 20px 6px; border: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
 .theme-male .right-bubble {
   background: var(--ios-accent);
   color: #ffffff;
   border-radius: 20px 20px 6px 20px;
   border: none;
-  box-shadow: none;
+  box-shadow: 0 4px 14px rgba(10, 132, 255, 0.35);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
@@ -685,7 +685,7 @@ onUnmounted(() => {
   box-shadow: 0 -10px 24px rgba(0, 0, 0, 0.16);
 }
 .theme-female .glass-footer { background: rgba(255, 255, 255, 0.7); border-top: 1px solid rgba(255, 183, 197, 0.25); }
-.theme-male .glass-footer { background: rgba(28, 28, 30, 0.92); border-top: 0.5px solid var(--ios-separator); box-shadow: none; }
+.theme-male .glass-footer { background: rgba(255, 255, 255, 0.12); border-top: 0.5px solid rgba(255, 255, 255, 0.2); box-shadow: none; }
 
 .icon-btn { font-size: 22px; transition: transform 0.1s; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15)); flex-shrink: 0; cursor: pointer; }
 .theme-female .icon-btn { color: #b86a7f; }

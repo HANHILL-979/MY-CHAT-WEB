@@ -34,25 +34,98 @@ body {
   color: #4b3046;
 }
 
-/* 男性视角：iOS 深色模式 · 苹果设计语言（真黑背景 + 分层卡片 + 系统蓝） */
+/* 男性视角：日落玻璃 · 苹果液态玻璃质感（Liquid Glass / vibrancy） */
 .theme-male {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Segoe UI", "Microsoft YaHei", sans-serif;
-  color: #f5f5f7;
-  /* ---- iOS 深色模式设计令牌（组件内 .theme-male 规则统一消费） ---- */
-  --ios-bg: #000000;            /* 系统背景：真黑 */
-  --ios-surface: #1c1c1e;       /* 二级表面：卡片 */
-  --ios-surface-2: #2c2c2e;     /* 三级表面：嵌套卡片/按钮 */
-  --ios-surface-3: #3a3a3c;     /* 四级表面：高亮行 */
-  --ios-fill: rgba(120, 120, 128, 0.24);   /* 系统填充：输入框底 */
-  --ios-accent: #0a84ff;        /* iOS 蓝（深色模式） */
+  color: #ffffff;
+  /* ---- 玻璃设计令牌（背景为日落实景，卡片一律半透白玻璃） ---- */
+  --ios-bg: transparent;             /* 页面背景交给 app-shell 的日落图 */
+  --ios-surface: rgba(255, 255, 255, 0.10);   /* 主玻璃面：卡片 */
+  --ios-surface-2: rgba(255, 255, 255, 0.16); /* 次玻璃面：嵌套/气泡 */
+  --ios-surface-3: rgba(255, 255, 255, 0.24); /* 按压态 */
+  --ios-fill: rgba(255, 255, 255, 0.14);      /* 输入框填充 */
+  --ios-accent: #0a84ff;        /* iOS 蓝 */
   --ios-green: #30d158;
   --ios-red: #ff453a;
   --ios-orange: #ff9f0a;
-  --ios-text: #f5f5f7;                  /* 主文本 */
-  --ios-text-2: rgba(235, 235, 245, 0.6);  /* 次文本 */
-  --ios-text-3: rgba(235, 235, 245, 0.3);  /* 三级文本 */
-  --ios-separator: rgba(84, 84, 88, 0.6);  /* 分隔线 */
-  --ios-radius: 12px;            /* iOS 卡片连续曲率圆角 */
+  --ios-text: #ffffff;
+  --ios-text-2: rgba(255, 255, 255, 0.75);  /* 次文本 */
+  --ios-text-3: rgba(255, 255, 255, 0.5);   /* 三级文本 */
+  --ios-separator: rgba(255, 255, 255, 0.16); /* 分隔线 */
+  --ios-radius: 12px;
+  /* 玻璃材质：模糊 + 提饱和（组件内未声明 backdrop-filter 的容器统一继承这套规则） */
+  --ios-blur: blur(24px) saturate(160%);
+}
+
+/* iOS 液态玻璃：统一为各页玻璃容器注入 backdrop-filter（组件内只声明 background，不冲突） */
+/* 顶部 1px 受光描边 + inset 高光是苹果玻璃材质的关键细节（light catching the material） */
+.theme-male .moment-card,
+.theme-male .male-hero,
+.theme-male .male-stats .stat-card,
+.theme-male .console-hero,
+.theme-male .console-stats .stat-card,
+.theme-male .console-right,
+.theme-male .action-row,
+.theme-male .console-table,
+.theme-male .console-header,
+.theme-male .calendar-card,
+.theme-male .male-header,
+.theme-male .male-row,
+.theme-male .score-panel,
+.theme-male .round-card,
+.theme-male .result-card,
+.theme-male .final-card,
+.theme-male .history,
+.theme-male .magic-box,
+.theme-male .console-card,
+.theme-male .interaction-box,
+.theme-male .left-bubble,
+.theme-male .top-chip,
+.theme-male .pop-menu,
+.theme-male .mode-card,
+.theme-male .entry-item {
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+/* 无障碍：系统开启"减少透明度"时玻璃退化为实底深色（iOS 行为一致） */
+@media (prefers-reduced-transparency: reduce) {
+  .theme-male {
+    --ios-surface: #2c2c2e;
+    --ios-surface-2: #3a3a3c;
+    --ios-surface-3: #48484a;
+    --ios-fill: #2c2c2e;
+  }
+  .theme-male .moment-card,
+  .theme-male .male-hero,
+  .theme-male .male-stats .stat-card,
+  .theme-male .console-hero,
+  .theme-male .console-stats .stat-card,
+  .theme-male .console-right,
+  .theme-male .action-row,
+  .theme-male .console-table,
+  .theme-male .console-header,
+  .theme-male .calendar-card,
+  .theme-male .male-header,
+  .theme-male .male-row,
+  .theme-male .score-panel,
+  .theme-male .round-card,
+  .theme-male .result-card,
+  .theme-male .final-card,
+  .theme-male .history,
+  .theme-male .magic-box,
+  .theme-male .console-card,
+  .theme-male .interaction-box,
+  .theme-male .left-bubble,
+  .theme-male .top-chip,
+  .theme-male .pop-menu,
+  .theme-male .mode-card,
+  .theme-male .entry-item {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 /* 网格背景类保留挂载点但不再绘制（iOS 风格无装饰线，用层级色差分区） */
@@ -69,9 +142,12 @@ body {
   color: #5a3947;
 }
 .theme-male .primary-btn {
-  background: var(--ios-accent);
+  background: rgba(255, 255, 255, 0.2);
   color: #ffffff;
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
 }
 
 /* 通用滚动区域 */
