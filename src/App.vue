@@ -141,7 +141,7 @@ onUnmounted(() => {
         <MinePage v-show="activeTab === 2" :active="activeTab === 2" @open-page="openPage" @switch-role="openSwitch" />
       </div>
 
-      <van-tabbar v-model="activeTab" class="app-tabbar" safe-area-inset-bottom>
+      <van-tabbar v-model="activeTab" class="app-tabbar" :fixed="false" safe-area-inset-bottom>
         <van-tabbar-item>
           <template #icon>
             <span class="tab-icon">📷</span>
