@@ -14,7 +14,7 @@ import QuizGame from './components/QuizGame.vue'
 
 // ---- 全局状态 ----
 const activeTab = ref(0) // 0 朋友圈 / 1 秘密基地 / 2 我的
-const showHome = ref(true) // 首页主题选择（复刻 Linda1 index 页，每次启动先见）
+const showHome = ref(false) // 不再默认显示入口首页，启动直接进朋友圈 Tab
 const activePage = ref(null) // 子页：diary / record / gacha / quiz
 const showSwitch = ref(false)
 const chatUnread = ref(0)
