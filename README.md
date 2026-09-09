@@ -7,7 +7,7 @@
 
 - **实时私聊**：气泡式对话，Supabase Realtime 毫秒级同步，历史消息自动加载，发送防抖 + 失败重试。
 - **心情日记**：Emoji 心情打卡 + 文字记录，双列瀑布流展示，日历视图高亮打卡日并支持按日期反查。
-- **身份绑定**：URL 参数首次绑定设备身份（`?user=小郭` / `?user=黄其宏`），LocalStorage 持久化，无需注册登录。
+- **身份绑定**：URL 参数首次绑定设备身份（`?user=大椰树` / `?user=小椰宝`），LocalStorage 持久化，无需注册登录。
 - **PWA**：iOS Safari「添加到主屏幕」即得全屏原生 App 级体验。
 
 ## 技术栈
@@ -29,10 +29,10 @@ npm run build   # 生产构建，输出到 dist/
 
 首次访问时通过 URL 参数绑定身份进行双端测试：
 
-- http://localhost:5173/?user=小郭 （→ `user_a`）
-- http://localhost:5173/?user=黄其宏 （→ `user_b`）
+- http://localhost:5173/?user=大椰树 （→ `user_a`，🌴）
+- http://localhost:5173/?user=小椰宝 （→ `user_b`，🥥）
 
-绑定后参数自动从 URL 移除；清除浏览器 localStorage 可重置身份。
+旧版姓名（小郭 / 黄其宏）作为兼容别名依然可绑定。绑定后参数自动从 URL 移除；清除浏览器 localStorage 可重置身份。
 
 ## 数据库结构（Supabase）
 

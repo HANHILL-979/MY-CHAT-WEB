@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { showToast } from 'vant'
 import { supabase } from '../supabase'
-import { identity, identityNames } from '../identity'
+import { identity, identityProfiles, identityNames } from '../identity'
 
 const messages = ref([])
 const input = ref('')
@@ -15,10 +15,43 @@ function isSelf(msg) {
   return msg.sender === identity.value
 }
 
+function avatarOf(sender) {
+  return identityProfiles[sender]?.avatar || '🙂'
+}
+
 // 对方身份展示名（身份已锁定，用于空状态提示）
 const otherName = computed(
   () => (identity.value === 'user_a' ? identityNames.user_b : identityNames.user_a)
 )
+const otherAvatar = computed(
+  () => (identity.value === 'user_a' ? identityProfiles.user_b.avatar : identityProfiles.user_a.avatar)
+)
+
+// timestamptz → 本地时区 yyyy-mm-dd
+function dateKeyOf(ts) {
+  const d = new Date(ts)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+// 日期分隔线文案：今天 / 昨天 / N月N日
+function dateLabel(ts) {
+  const now = new Date()
+  if (dateKeyOf(ts) === dateKeyOf(now)) return '今天'
+  const yesterday = new Date(now)
+  yesterday.setDate(now.getDate() - 1)
+  if (dateKeyOf(ts) === dateKeyOf(yesterday)) return '昨天'
+  const d = new Date(ts)
+  return `${d.getMonth() + 1}月${d.getDate()}日`
+}
+
+// 与上一条消息不在同一天时显示日期分隔线
+function showDivider(msg, idx) {
+  if (idx === 0) return true
+  return dateKeyOf(msg.created_at) !== dateKeyOf(messages.value[idx - 1].created_at)
+}
 
 function formatTime(ts) {
   if (!ts) return ''
@@ -130,23 +163,29 @@ onUnmounted(() => {
   <div class="chat-room">
     <div ref="listRef" class="messages-list">
       <div v-if="messages.length === 0" class="empty-tip">
-        还没有消息，和 {{ otherName }} 说点什么吧～
+        <div class="empty-emoji">{{ otherAvatar }}</div>
+        <p>还没有消息</p>
+        <p class="empty-sub">和 {{ otherName }} 说点什么吧～</p>
       </div>
-      <div
-        v-for="msg in messages"
-        :key="msg.id"
-        class="msg-row"
-        :class="{ 'msg-row-self': isSelf(msg) }"
-      >
-        <div class="msg-avatar">{{ isSelf(msg) ? 'A' : 'B' }}</div>
-        <div class="msg-body">
-          <div
-            class="msg-item"
-            :class="isSelf(msg) ? 'msg-self' : 'msg-other'"
-          >{{ msg.content }}</div>
-          <div class="msg-time">{{ formatTime(msg.created_at) }}</div>
+
+      <template v-for="(msg, idx) in messages" :key="msg.id">
+        <!-- 日期分隔线 -->
+        <div v-if="showDivider(msg, idx)" class="date-divider">
+          <span>{{ dateLabel(msg.created_at) }}</span>
         </div>
-      </div>
+
+        <div class="msg-row" :class="{ 'msg-row-self': isSelf(msg) }">
+          <div class="msg-avatar" :class="{ 'msg-avatar-self': isSelf(msg) }">
+            {{ avatarOf(msg.sender) }}
+          </div>
+          <div class="msg-body">
+            <div class="msg-item" :class="isSelf(msg) ? 'msg-self' : 'msg-other'">
+              {{ msg.content }}
+            </div>
+            <div class="msg-time">{{ formatTime(msg.created_at) }}</div>
+          </div>
+        </div>
+      </template>
     </div>
 
     <!-- 发送失败重试条 -->
@@ -164,9 +203,9 @@ onUnmounted(() => {
         @focus="scrollToBottom"
         @keydown.enter="send"
       />
-      <van-button type="primary" round class="send-btn" :loading="sending" @click="send">
-        发送
-      </van-button>
+      <button class="send-btn" :class="{ 'send-btn-active': input.trim() }" :disabled="sending" @click="send">
+        <van-icon name="arrow" />
+      </button>
     </div>
   </div>
 </template>
@@ -177,24 +216,65 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: #f8fafc;
+  /* 椰林晨雾渐变背景 + 细微圆点纹理 */
+  background:
+    radial-gradient(circle at 18% 12%, rgba(134, 239, 172, 0.18), transparent 42%),
+    radial-gradient(circle at 85% 88%, rgba(147, 197, 253, 0.22), transparent 45%),
+    linear-gradient(180deg, #f0f7ff 0%, #f5f9f2 100%);
 }
 
 .messages-list {
   flex: 1;
-  padding: 16px;
+  padding: 16px 14px 8px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
+/* 空状态 */
 .empty-tip {
   margin: auto;
-  color: #94a3b8;
-  font-size: 13px;
+  text-align: center;
+  color: #64748b;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
+.empty-emoji {
+  width: 64px;
+  height: 64px;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  font-size: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.empty-sub {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* 日期分隔线 */
+.date-divider {
+  align-self: center;
+  padding: 3px 12px;
+  border-radius: 10px;
+  background: rgba(100, 116, 139, 0.12);
+  backdrop-filter: blur(4px);
+  font-size: 11px;
+  color: #64748b;
+  margin: 2px 0;
+}
+
+/* 消息行 */
 .msg-row {
   display: flex;
   gap: 8px;
@@ -206,59 +286,65 @@ onUnmounted(() => {
 }
 
 .msg-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #93c5fd, #60a5fa);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
+  width: 36px;
+  height: 36px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
-.msg-row-self .msg-avatar {
-  background: linear-gradient(135deg, #6ee7b7, #34d399);
+.msg-avatar-self {
+  border-color: #dbeafe;
+  background: #eff6ff;
 }
 
 .msg-body {
   display: flex;
   flex-direction: column;
-  max-width: 75%;
+  max-width: 72%;
 }
 
 .msg-row-self .msg-body {
   align-items: flex-end;
 }
 
+/* 气泡 */
 .msg-item {
   padding: 10px 14px;
-  border-radius: 16px;
-  font-size: 14px;
-  line-height: 1.5;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.55;
   word-break: break-word;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  letter-spacing: 0.2px;
 }
 
+/* 自己：蓝紫渐变 */
 .msg-self {
-  background-color: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
   color: #ffffff;
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 6px;
+  box-shadow: 0 3px 10px rgba(79, 102, 241, 0.28);
 }
 
+/* 对方：白色卡片 */
 .msg-other {
-  background-color: #ffffff;
+  background: #ffffff;
   color: #1f2937;
-  border: 1px solid #e2e8f0;
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .msg-time {
   margin-top: 4px;
-  font-size: 11px;
+  font-size: 10px;
   color: #94a3b8;
+  padding: 0 2px;
 }
 
 /* 发送失败重试条 */
@@ -281,13 +367,15 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
+/* 底部输入栏 */
 .input-bar {
   display: flex;
   padding: 10px 12px;
   padding-bottom: calc(10px + constant(safe-area-inset-bottom));
   padding-bottom: calc(10px + env(safe-area-inset-bottom));
-  background-color: #ffffff;
-  border-top: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
   gap: 10px;
   align-items: center;
   flex-shrink: 0;
@@ -299,23 +387,43 @@ onUnmounted(() => {
 }
 
 .input-field :deep(.van-field__control) {
-  padding: 10px 16px;
-  border: 1px solid #cbd5e1;
+  padding: 11px 18px;
+  border: none;
   border-radius: 24px;
   outline: none;
-  font-size: 14px;
-  background-color: #f8fafc;
-  transition: border-color 0.2s;
+  font-size: 15px;
+  background-color: #f1f5f9;
+  transition: background-color 0.2s, box-shadow 0.2s;
 }
 
 .input-field :deep(.van-field__control:focus) {
-  border-color: #3b82f6;
   background-color: #ffffff;
+  box-shadow: 0 0 0 2px #bfdbfe;
 }
 
+/* 发送按钮：渐变圆钮，有内容时点亮 */
 .send-btn {
-  padding: 0 18px;
-  height: 38px;
-  font-weight: 600;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #cbd5e1;
+  color: #ffffff;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.15s;
+}
+
+.send-btn-active {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  box-shadow: 0 3px 10px rgba(79, 102, 241, 0.35);
+}
+
+.send-btn:active {
+  transform: scale(0.9);
 }
 </style>

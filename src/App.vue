@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { displayName } from './identity'
+import { identity, displayName, identityProfiles } from './identity'
 import ChatRoom from './components/ChatRoom.vue'
 import MoodDiary from './components/MoodDiary.vue'
 
@@ -17,7 +17,7 @@ const activeTab = ref(0)
       <template #right>
         <!-- 身份已锁定，仅展示当前设备绑定的身份 -->
         <span class="identity-tag">
-          <van-icon name="manager-o" />
+          <span class="identity-avatar">{{ identityProfiles[identity].avatar }}</span>
           {{ displayName }}
         </span>
       </template>
@@ -71,13 +71,24 @@ const activeTab = ref(0)
 .identity-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 12px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 14px;
+  gap: 6px;
+  padding: 4px 12px 4px 4px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 16px;
   color: #fff;
   font-size: 13px;
   font-weight: 500;
+}
+
+.identity-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.35);
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .app-content {

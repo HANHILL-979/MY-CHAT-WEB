@@ -2,17 +2,25 @@ import { ref, computed } from 'vue'
 
 const STORAGE_KEY = 'my-space-identity'
 
-// 双人展示名 → 数据库标识映射（入库仍用 'user_a' | 'user_b'，不动历史数据）
+// 双人资料：展示名 + 头像（数据库标识仍为 user_a/user_b，不动历史数据）
+const PROFILES = {
+  user_a: { name: '大椰树', avatar: '🌴' },
+  user_b: { name: '小椰宝', avatar: '🥥' },
+}
+const ID_TO_NAME = {
+  user_a: '大椰树',
+  user_b: '小椰宝',
+}
+// 旧版姓名作为别名兼容：历史绑定链接（?user=小郭 / ?user=黄其宏）依然有效
 const NAME_TO_ID = {
+  大椰树: 'user_a',
+  小椰宝: 'user_b',
   小郭: 'user_a',
   黄其宏: 'user_b',
 }
-const ID_TO_NAME = {
-  user_a: '小郭',
-  user_b: '黄其宏',
-}
 
 export const identityNames = ID_TO_NAME
+export const identityProfiles = PROFILES
 
 // 首次打开时解析设备身份：URL 参数优先，其次本机绑定，最后回退默认
 function resolveIdentity() {
@@ -37,5 +45,5 @@ function resolveIdentity() {
 // 当前设备绑定的身份（已锁定，不再提供切换 UI）
 export const identity = ref(resolveIdentity())
 
-// 当前身份展示名（如 "小郭"）
+// 当前身份展示名（如 "大椰树"）
 export const displayName = computed(() => ID_TO_NAME[identity.value])

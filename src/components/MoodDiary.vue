@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { showToast } from 'vant'
 import { supabase } from '../supabase'
-import { identity } from '../identity'
+import { identity, identityProfiles } from '../identity'
 
 // 可选心情 Emoji
 const MOODS = ['😊', '🥰', '😭', '😴', '🎉', '😡', '🤔', '🥲']
@@ -204,7 +204,9 @@ onUnmounted(() => {
       <div v-for="diary in visibleDiaries" :key="diary.id" class="diary-card" :class="`diary-${diary.author}`">
         <div class="diary-head">
           <span class="diary-mood">{{ diary.mood || '🙂' }}</span>
-          <span class="diary-author">{{ diary.author === 'user_a' ? 'A' : 'B' }}</span>
+          <span class="diary-author" :class="`diary-author-${diary.author}`">
+            {{ identityProfiles[diary.author]?.avatar || '🙂' }}
+          </span>
           <span class="diary-date">{{ formatDate(diary.created_at) }}</span>
         </div>
         <div class="diary-content">{{ diary.content }}</div>
@@ -390,16 +392,22 @@ onUnmounted(() => {
 }
 
 .diary-author {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #e2e8f0;
-  color: #475569;
-  font-size: 11px;
-  font-weight: 600;
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #f1f5f9;
+}
+
+.diary-author-user_a {
+  background: #ecfdf5;
+}
+
+.diary-author-user_b {
+  background: #fff7ed;
 }
 
 .diary-date {
