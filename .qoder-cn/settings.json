@@ -1,0 +1,8 @@
+{
+  "enabledPlugins": {
+    "agent-design-studio@qoder-marketplace": true,
+    "qmind-knowledge-cn-vpc@qoder-marketplace": true,
+    "architecture-visualization@qoder-marketplace": true,
+    "context7@qoder-marketplace": true
+  }
+}

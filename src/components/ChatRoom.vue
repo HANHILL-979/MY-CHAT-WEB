@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
-import { showToast } from 'vant'
+import { showToast, showDialog } from 'vant'
 import { supabase } from '../supabase'
 import { identity, identityProfiles, identityNames } from '../identity'
 
@@ -9,6 +9,8 @@ const input = ref('')
 const sending = ref(false)
 const listRef = ref(null)
 let channel = null
+let longPressTimer = null
+let deletingMsgId = null
 
 // 消息归属判断：与当前身份一致则为"自己"的气泡
 function isSelf(msg) {
@@ -134,6 +136,37 @@ function retry() {
   doSend(failedContent.value)
 }
 
+// 长按删除消息
+function handleTouchStart(msg) {
+  longPressTimer = setTimeout(() => {
+    deletingMsgId = msg.id
+    showDialog({
+      title: '删除消息',
+      message: `确定要删除这条消息吗？\n\n「${msg.content}」`,
+      showCancelButton: true,
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+    })
+      .then(async () => {
+        const { error } = await supabase
+          .from('messages')
+          .delete()
+          .eq('id', deletingMsgId)
+        if (error) {
+          showToast('删除失败：' + error.message)
+        } else {
+          messages.value = messages.value.filter((m) => m.id !== deletingMsgId)
+          showToast('已删除')
+        }
+      })
+      .catch(() => {})
+  }, 500)
+}
+
+function handleTouchEnd() {
+  clearTimeout(longPressTimer)
+}
+
 onMounted(() => {
   loadHistory()
   // iOS 键盘弹起/收起时视口高度变化，同步滚动到底部
@@ -179,7 +212,14 @@ onUnmounted(() => {
             {{ avatarOf(msg.sender) }}
           </div>
           <div class="msg-body">
-            <div class="msg-item" :class="isSelf(msg) ? 'msg-self' : 'msg-other'">
+            <div
+              class="msg-item"
+              :class="isSelf(msg) ? 'msg-self' : 'msg-other'"
+              @touchstart="handleTouchStart(msg)"
+              @touchend="handleTouchEnd"
+              @touchcancel="handleTouchEnd"
+              @contextmenu.prevent="handleTouchStart(msg)"
+            >
               {{ msg.content }}
             </div>
             <div class="msg-time">{{ formatTime(msg.created_at) }}</div>
