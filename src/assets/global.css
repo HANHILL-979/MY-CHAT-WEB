@@ -14,7 +14,7 @@ body {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background-color: #f0f2f5;
+  background-color: #0f0f18;
   color: #1f2937;
   display: flex;
   justify-content: center;
@@ -25,6 +25,50 @@ body {
   width: 100%;
   max-width: 480px;
   height: 100%;
+}
+
+/* ============ 双主题系统（复刻 Linda1） ============ */
+/* 女性视角：治愈系 · 云端呼吸 */
+.theme-female {
+  font-family: "ZCOOL XiaoWei", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, sans-serif;
+  color: #4b3046;
+}
+
+/* 男性视角：极客感 · 赛博秩序（等宽字体 + 网格线 + 扫描线） */
+.theme-male {
+  font-family: "JetBrains Mono", "SFMono-Regular", "Consolas", "Liberation Mono", Menlo, monospace;
+  color: #e8faff;
+}
+
+/* 赛博网格背景（挂在 .theme-male 上，各页面用 ::before 局部控制浓淡） */
+.theme-male-grid {
+  position: relative;
+}
+.theme-male-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.08) 0, rgba(0, 229, 255, 0.08) 1px, transparent 1px, transparent 30px),
+    repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0, rgba(0, 229, 255, 0.05) 1px, transparent 1px, transparent 30px);
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+/* 主题渐变主按钮 */
+.theme-female .primary-btn {
+  background: linear-gradient(135deg, #ffb7c5, #ffd93d);
+  color: #5a3947;
+}
+.theme-male .primary-btn {
+  background: linear-gradient(135deg, #00e5ff, #6a7dff);
+  color: #041018;
+}
+
+/* 通用滚动区域 */
+.scroll-area {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* 彻底隐藏 Netlify 注入的右下角悬浮水印、挂件与徽章 */

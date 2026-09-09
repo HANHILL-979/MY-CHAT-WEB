@@ -1,69 +1,60 @@
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
-import { showToast, showDialog } from 'vant'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { showToast, showDialog, showImagePreview } from 'vant'
 import { supabase } from '../supabase'
-import { identity, identityProfiles, identityNames } from '../identity'
+import { identity, identityProfiles, nameOf } from '../identity'
+import { theme } from '../theme'
+import { formatTime, getTimestamp } from '../utils/time'
+import { pickImages, compressImage, isImageContent, vibrate } from '../utils/image'
+
+const props = defineProps({
+  active: { type: Boolean, default: true },
+})
+const emit = defineEmits(['switch-role', 'chat-read'])
 
 const messages = ref([])
 const input = ref('')
 const sending = ref(false)
 const listRef = ref(null)
+const chatBg = ref('')
+const isLoadingHistory = ref(false)
+const isHistoryOver = ref(false)
+const failedContent = ref('')
 let channel = null
 let longPressTimer = null
 let deletingMsgId = null
+let pollTimer = null
+let lastActionTime = 0
+let lastSentAt = 0
+let saveTimer = null
 
-// 消息归属判断：与当前身份一致则为"自己"的气泡
+const themeClass = computed(() => (theme.value === 'male' ? 'theme-male' : 'theme-female'))
+
+// 壁纸背景（无壁纸时使用主题渐变兜底）
+const backgroundStyle = computed(() => {
+  const fallback =
+    theme.value === 'male'
+      ? 'linear-gradient(160deg, #0e121a 0%, #101b2a 48%, #0a0f17 100%)'
+      : 'linear-gradient(160deg, #fffdf5 0%, #ffe7ef 50%, #fff3d9 100%)'
+  return { backgroundImage: chatBg.value ? `url(${chatBg.value})` : fallback }
+})
+
 function isSelf(msg) {
   return msg.sender === identity.value
 }
 
-function avatarOf(sender) {
-  return identityProfiles[sender]?.avatar || '🙂'
-}
-
-// 对方身份展示名（身份已锁定，用于空状态提示）
-const otherName = computed(
-  () => (identity.value === 'user_a' ? identityNames.user_b : identityNames.user_a)
-)
-const otherAvatar = computed(
-  () => (identity.value === 'user_a' ? identityProfiles.user_b.avatar : identityProfiles.user_a.avatar)
-)
-
-// timestamptz → 本地时区 yyyy-mm-dd
-function dateKeyOf(ts) {
-  const d = new Date(ts)
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
-// 日期分隔线文案：今天 / 昨天 / N月N日
-function dateLabel(ts) {
-  const now = new Date()
-  if (dateKeyOf(ts) === dateKeyOf(now)) return '今天'
-  const yesterday = new Date(now)
-  yesterday.setDate(now.getDate() - 1)
-  if (dateKeyOf(ts) === dateKeyOf(yesterday)) return '昨天'
-  const d = new Date(ts)
-  return `${d.getMonth() + 1}月${d.getDate()}日`
-}
-
-// 与上一条消息不在同一天时显示日期分隔线
-function showDivider(msg, idx) {
-  if (idx === 0) return true
-  return dateKeyOf(msg.created_at) !== dateKeyOf(messages.value[idx - 1].created_at)
-}
-
-function formatTime(ts) {
-  if (!ts) return ''
-  const d = new Date(ts)
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+// 消息归一化：统一 create_time 毫秒 + HH:MM 显示时间
+function normalizeMessage(item = {}) {
+  const ts = getTimestamp(item.created_at || item.create_time)
+  const safeTs = ts || Date.now()
+  return { ...item, create_time: safeTs, time: formatTime(safeTs) }
 }
 
 function scrollToBottom() {
   nextTick(() => {
-    if (listRef.value) listRef.value.scrollTop = listRef.value.scrollHeight
+    setTimeout(() => {
+      if (listRef.value) listRef.value.scrollTop = listRef.value.scrollHeight
+    }, 60)
   })
 }
 
@@ -72,47 +63,150 @@ function onViewportResize() {
   scrollToBottom()
 }
 
-// 读取历史消息（最多 200 条，按时间正序）
-async function loadHistory() {
-  const { data, error } = await supabase
-    .from('messages')
-    .select('*')
-    .order('created_at', { ascending: true })
-    .limit(200)
-  if (error) {
-    showToast('读取历史消息失败')
-    return
+function activeTouch() {
+  lastActionTime = Date.now()
+}
+
+// ---- 本地缓存（Linda1：最近 200 条，防白屏） ----
+function saveToLocal() {
+  if (saveTimer) clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem('chat_history_cache', JSON.stringify(messages.value.slice(-200)))
+    } catch (e) {
+      console.warn('缓存聊天记录失败', e)
+    }
+  }, 300)
+}
+
+function loadFromLocal() {
+  try {
+    const local = JSON.parse(localStorage.getItem('chat_history_cache') || '[]')
+    if (Array.isArray(local) && local.length > 0) {
+      messages.value = local.map(normalizeMessage).sort((a, b) => a.create_time - b.create_time)
+      scrollToBottom()
+    }
+  } catch (e) {
+    /* 忽略损坏缓存 */
   }
-  messages.value = data || []
-  scrollToBottom()
 }
 
-// 实时收到新消息：按 id 去重（本地乐观插入过的跳过）
+// ---- 拉取新消息（容错：-60 秒重叠窗口 + 双重去重） ----
+async function fetchNewMessages() {
+  try {
+    let query
+    if (messages.value.length > 0) {
+      const lastMsg = messages.value[messages.value.length - 1]
+      if (lastMsg.create_time) {
+        const safeTime = lastMsg.create_time - 60000
+        query = supabase
+          .from('messages')
+          .select('*')
+          .gt('created_at', new Date(safeTime).toISOString())
+          .order('created_at', { ascending: true })
+          .limit(100)
+      }
+    }
+    if (!query) {
+      query = supabase.from('messages').select('*').order('created_at', { ascending: false }).limit(50)
+    }
+    const { data, error } = await query
+    if (error) throw error
+    let newData = (data || []).map(normalizeMessage)
+    if (messages.value.length === 0 && newData.length > 0 && newData[0].create_time > newData[newData.length - 1].create_time) {
+      newData = newData.reverse()
+    }
+    if (newData.length > 0) {
+      const existIds = new Set(messages.value.map((m) => m.id))
+      const existKeys = new Set(messages.value.map((m) => `${m.create_time}_${m.sender}`))
+      const realNewMsgs = newData.filter(
+        (m) => !m.id || (!existIds.has(m.id) && !existKeys.has(`${m.create_time}_${m.sender}`))
+      )
+      if (realNewMsgs.length > 0) {
+        messages.value = [...messages.value, ...realNewMsgs].sort((a, b) => a.create_time - b.create_time)
+        saveToLocal()
+        scrollToBottom()
+        activeTouch()
+      }
+    }
+  } catch (err) {
+    console.error('拉取消息失败:', err)
+  }
+}
+
+// ---- 上滑加载历史（每页 20 条） ----
+async function getMoreHistory() {
+  if (isLoadingHistory.value || isHistoryOver.value || messages.value.length === 0) return
+  const el = listRef.value
+  if (!el || el.scrollTop > 40) return
+  isLoadingHistory.value = true
+  try {
+    const oldestTime = messages.value[0].create_time
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .lt('created_at', new Date(oldestTime).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(20)
+    if (error) throw error
+    const oldData = (data || []).map(normalizeMessage).reverse()
+    if (oldData.length > 0) {
+      const prevHeight = el.scrollHeight
+      messages.value = [...oldData, ...messages.value].sort((a, b) => a.create_time - b.create_time)
+      saveToLocal()
+      // 保持视口停留在原位置
+      nextTick(() => {
+        el.scrollTop = el.scrollHeight - prevHeight
+      })
+    } else {
+      isHistoryOver.value = true
+    }
+  } catch (err) {
+    console.error('加载历史失败:', err)
+  } finally {
+    isLoadingHistory.value = false
+  }
+}
+
+// ---- 实时订阅：毫秒级同步双人消息 ----
 function handleInsert(payload) {
-  const msg = payload.new
+  const msg = normalizeMessage(payload.new)
   if (messages.value.some((m) => m.id === msg.id)) return
+  if (msg.sender === identity.value) return // 自己的乐观插入已在本地
   messages.value.push(msg)
+  saveToLocal()
   scrollToBottom()
+  activeTouch()
 }
 
-// 发送失败时暂存内容，供一键重试
-const failedContent = ref('')
-let lastSentAt = 0
+// ---- 自适应轮询（活跃 3s / 静默 15s，兜底实时断线） ----
+function startPolling() {
+  stopPolling()
+  const delay = Date.now() - lastActionTime < 60000 ? 3000 : 15000
+  pollTimer = setTimeout(() => {
+    if (props.active) fetchNewMessages()
+    startPolling()
+  }, delay)
+}
+function stopPolling() {
+  if (pollTimer) {
+    clearTimeout(pollTimer)
+    pollTimer = null
+  }
+}
 
+// ---- 发送文本 ----
 async function doSend(content) {
   sending.value = true
-  const { data, error } = await supabase
-    .from('messages')
-    .insert([{ sender: identity.value, content }])
-    .select()
+  const { data, error } = await supabase.from('messages').insert([{ sender: identity.value, content }]).select()
   if (error) {
     failedContent.value = content
     showToast('发送失败，请重试')
   } else {
     failedContent.value = ''
-    // 乐观插入，实时事件回来时按 id 去重
     if (data && data[0]) {
-      messages.value.push(data[0])
+      messages.value.push(normalizeMessage(data[0]))
+      saveToLocal()
       scrollToBottom()
     }
     input.value = ''
@@ -123,10 +217,10 @@ async function doSend(content) {
 async function send() {
   const content = input.value.trim()
   if (!content || sending.value) return
-  // 防抖：500ms 内的重复触发（连点/回车）只发送一次
   const now = Date.now()
   if (now - lastSentAt < 500) return
   lastSentAt = now
+  activeTouch()
   await doSend(content)
 }
 
@@ -136,26 +230,69 @@ function retry() {
   doSend(failedContent.value)
 }
 
-// 长按删除消息
+// ---- 发送图片（压缩后以 dataURL 存入 content） ----
+async function chooseImage() {
+  if (sending.value) return
+  activeTouch()
+  const files = await pickImages(1)
+  if (!files.length) return
+  sending.value = true
+  showToast({ message: '发送中...', duration: 0, forbidClick: true })
+  try {
+    const dataUrl = await compressImage(files[0], 1080, 0.75)
+    const { data, error } = await supabase
+      .from('messages')
+      .insert([{ sender: identity.value, content: dataUrl }])
+      .select()
+    if (error) throw error
+    if (data && data[0]) {
+      messages.value.push(normalizeMessage(data[0]))
+      saveToLocal()
+      scrollToBottom()
+    }
+  } catch (e) {
+    console.error('图片发送失败', e)
+    showToast('上传失败，请重试')
+  } finally {
+    sending.value = false
+    showToast.clear && showToast.clear()
+  }
+}
+
+// ---- 更换聊天壁纸 ----
+async function changeWallpaper() {
+  const files = await pickImages(1)
+  if (!files.length) return
+  try {
+    const dataUrl = await compressImage(files[0], 1280, 0.8)
+    chatBg.value = dataUrl
+    localStorage.setItem('custom_chat_bg', dataUrl)
+    showToast('聊天背景已更新')
+  } catch (e) {
+    showToast('背景设置失败')
+  }
+}
+
+// ---- 长按删除消息 ----
 function handleTouchStart(msg) {
   longPressTimer = setTimeout(() => {
+    vibrate(15)
     deletingMsgId = msg.id
+    const preview = isImageContent(msg.content) ? '[图片]' : msg.content
     showDialog({
-      title: '删除消息',
-      message: `确定要删除这条消息吗？\n\n「${msg.content}」`,
+      title: '提示',
+      message: `确定删除这条回忆吗？\n\n「${preview}」`,
       showCancelButton: true,
       confirmButtonText: '删除',
       cancelButtonText: '取消',
     })
       .then(async () => {
-        const { error } = await supabase
-          .from('messages')
-          .delete()
-          .eq('id', deletingMsgId)
+        const { error } = await supabase.from('messages').delete().eq('id', deletingMsgId)
         if (error) {
           showToast('删除失败：' + error.message)
         } else {
           messages.value = messages.value.filter((m) => m.id !== deletingMsgId)
+          saveToLocal()
           showToast('已删除')
         }
       })
@@ -167,24 +304,68 @@ function handleTouchEnd() {
   clearTimeout(longPressTimer)
 }
 
+// ---- 长按顶栏：清空本地缓存（复刻 Linda1 调试入口） ----
+function handleTopBarLongPress() {
+  longPressTimer = setTimeout(() => {
+    showDialog({
+      title: '调试',
+      message: '清空本地聊天缓存(也会清空壁纸)',
+      showCancelButton: true,
+    })
+      .then(() => {
+        localStorage.removeItem('chat_history_cache')
+        localStorage.removeItem('custom_chat_bg')
+        chatBg.value = ''
+        messages.value = []
+        isHistoryOver.value = false
+        fetchNewMessages()
+        showToast('已清空')
+      })
+      .catch(() => {})
+  }, 600)
+}
+
+function previewImg(url) {
+  if (url) showImagePreview([url])
+}
+
+// 活跃状态下消息变化即视为已读（供全局红点使用）
+watch(
+  () => messages.value.length,
+  () => {
+    if (props.active) emit('chat-read')
+  }
+)
+
+watch(
+  () => props.active,
+  (v) => {
+    if (v) {
+      activeTouch()
+      fetchNewMessages()
+      scrollToBottom()
+    }
+  }
+)
+
 onMounted(() => {
-  loadHistory()
-  // iOS 键盘弹起/收起时视口高度变化，同步滚动到底部
+  const savedBg = localStorage.getItem('custom_chat_bg')
+  if (savedBg) chatBg.value = savedBg
+  loadFromLocal()
+  activeTouch()
+  fetchNewMessages()
+  startPolling()
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', onViewportResize)
   }
-  // 订阅 messages 表 INSERT 事件，毫秒级同步双人消息
   channel = supabase
     .channel('messages_realtime')
-    .on(
-      'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'messages' },
-      handleInsert
-    )
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, handleInsert)
     .subscribe()
 })
 
 onUnmounted(() => {
+  stopPolling()
   if (window.visualViewport) {
     window.visualViewport.removeEventListener('resize', onViewportResize)
   }
@@ -193,39 +374,69 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="chat-room">
-    <div ref="listRef" class="messages-list">
-      <div v-if="messages.length === 0" class="empty-tip">
-        <div class="empty-emoji">{{ otherAvatar }}</div>
-        <p>还没有消息</p>
-        <p class="empty-sub">和 {{ otherName }} 说点什么吧～</p>
+  <div class="chat-room" :class="themeClass" :style="backgroundStyle" @click="activeTouch">
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <!-- 顶栏（双主题） -->
+    <div class="top-bar" @touchstart="handleTopBarLongPress" @touchend="handleTouchEnd" @contextmenu.prevent>
+      <template v-if="theme !== 'male'">
+        <div>
+          <span class="top-eyebrow">Private Channel</span>
+          <span class="top-title">秘密基地</span>
+          <span class="top-subtitle">只属于你我的小宇宙</span>
+        </div>
+        <!-- 点击右上角胶囊切换身份 -->
+        <div class="top-chip" @click.stop="emit('switch-role')">{{ messages.length }} 条心跳</div>
+      </template>
+      <template v-else>
+        <div>
+          <span class="top-eyebrow">SECURE LINK</span>
+          <span class="top-title">LOVER::NODE</span>
+          <span class="top-subtitle">SYNC {{ messages.length }} MSG</span>
+        </div>
+        <div class="top-chip" @click.stop="emit('switch-role')">ONLINE</div>
+      </template>
+    </div>
+
+    <!-- 消息列表 -->
+    <div ref="listRef" class="chat-list" @scroll="getMoreHistory">
+      <div v-if="isLoadingHistory" class="loading-tip">
+        <span class="glass-tag">正在寻找回忆...</span>
       </div>
 
-      <template v-for="(msg, idx) in messages" :key="msg.id">
-        <!-- 日期分隔线 -->
-        <div v-if="showDivider(msg, idx)" class="date-divider">
-          <span>{{ dateLabel(msg.created_at) }}</span>
+      <div
+        v-for="item in messages"
+        :key="item.id || item.create_time"
+        class="message-row"
+        :class="{ self: isSelf(item) }"
+        @touchstart="handleTouchStart(item)"
+        @touchend="handleTouchEnd"
+        @touchcancel="handleTouchEnd"
+        @contextmenu.prevent
+      >
+        <img v-if="!isSelf(item)" class="avatar left-avatar" :src="identityProfiles[item.sender]?.img" alt="" />
+
+        <div class="content-box">
+          <span v-if="!isSelf(item)" class="nickname">{{ nameOf(item.sender) }}</span>
+
+          <img
+            v-if="isImageContent(item.content)"
+            class="img-bubble"
+            :src="item.content"
+            alt=""
+            @click.stop="previewImg(item.content)"
+          />
+          <div v-else class="bubble text-bubble" :class="isSelf(item) ? 'right-bubble' : 'left-bubble'">
+            <span class="bubble-text">{{ item.content }}</span>
+            <span class="bubble-time">{{ item.time }}</span>
+          </div>
         </div>
 
-        <div class="msg-row" :class="{ 'msg-row-self': isSelf(msg) }">
-          <div class="msg-avatar" :class="{ 'msg-avatar-self': isSelf(msg) }">
-            {{ avatarOf(msg.sender) }}
-          </div>
-          <div class="msg-body">
-            <div
-              class="msg-item"
-              :class="isSelf(msg) ? 'msg-self' : 'msg-other'"
-              @touchstart="handleTouchStart(msg)"
-              @touchend="handleTouchEnd"
-              @touchcancel="handleTouchEnd"
-              @contextmenu.prevent="handleTouchStart(msg)"
-            >
-              {{ msg.content }}
-            </div>
-            <div class="msg-time">{{ formatTime(msg.created_at) }}</div>
-          </div>
-        </div>
-      </template>
+        <img v-if="isSelf(item)" class="avatar right-avatar" :src="identityProfiles[item.sender]?.img" alt="" />
+      </div>
+
+      <div class="bottom-spacer"></div>
     </div>
 
     <!-- 发送失败重试条 -->
@@ -234,18 +445,28 @@ onUnmounted(() => {
       <van-button size="small" type="warning" plain round @click="retry">重试</van-button>
     </div>
 
-    <div class="input-bar">
-      <van-field
+    <!-- 底部输入栏 -->
+    <div class="footer glass-footer">
+      <div class="icon-btn" @click="changeWallpaper">🌌</div>
+      <div class="icon-btn" @click="chooseImage">🖼️</div>
+
+      <input
         v-model="input"
-        class="input-field"
-        placeholder="输入消息..."
+        class="input-box"
+        placeholder="偷偷说句情话..."
         maxlength="500"
-        @focus="scrollToBottom"
-        @keydown.enter="send"
+        @keyup.enter="send"
+        @focus="activeTouch"
       />
-      <button class="send-btn" :class="{ 'send-btn-active': input.trim() }" :disabled="sending" @click="send">
-        <van-icon name="arrow" />
-      </button>
+
+      <div
+        class="send-btn"
+        :class="{ 'btn-active': input.length > 0 && !sending }"
+        :style="{ opacity: sending ? 0.6 : 1 }"
+        @click="send"
+      >
+        {{ sending ? '发送中...' : '发送' }}
+      </div>
     </div>
   </div>
 </template>
@@ -255,139 +476,166 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  position: relative;
+  background-size: cover;
+  background-position: center;
   overflow: hidden;
-  /* 椰林晨雾渐变背景 + 细微圆点纹理 */
+}
+.chat-room.theme-female {
+  font-family: "ZCOOL XiaoWei", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: #4b3046;
+}
+.chat-room.theme-male {
+  font-family: "JetBrains Mono", "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+  color: #e8faff;
+}
+.chat-room.theme-male::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   background:
-    radial-gradient(circle at 18% 12%, rgba(134, 239, 172, 0.18), transparent 42%),
-    radial-gradient(circle at 85% 88%, rgba(147, 197, 253, 0.22), transparent 45%),
-    linear-gradient(180deg, #f0f7ff 0%, #f5f9f2 100%);
+    repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.08) 0, rgba(0, 229, 255, 0.08) 1px, transparent 1px, transparent 32px),
+    repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0, rgba(0, 229, 255, 0.05) 1px, transparent 1px, transparent 32px);
+  opacity: 0.16;
+  pointer-events: none;
+  z-index: 0;
+}
+.chat-room.theme-male::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.8), transparent);
+  animation: scanLine 5s linear infinite;
+  opacity: 0.5;
+  z-index: 0;
+}
+@keyframes scanLine {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(300%); }
 }
 
-.messages-list {
-  flex: 1;
-  padding: 16px 14px 8px;
-  overflow-y: auto;
+.ambient {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(36px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+.theme-female .ambient-one { width: 240px; height: 240px; right: -70px; top: 40px; background: rgba(255, 183, 197, 0.32); }
+.theme-female .ambient-two { width: 260px; height: 260px; left: -90px; bottom: 140px; background: rgba(255, 217, 61, 0.22); }
+.theme-male .ambient-one { width: 260px; height: 260px; right: -80px; top: 30px; background: rgba(0, 229, 255, 0.18); }
+.theme-male .ambient-two { width: 240px; height: 240px; left: -70px; bottom: 120px; background: rgba(106, 125, 255, 0.2); }
+
+/* 顶栏 */
+.top-bar {
+  position: relative;
+  z-index: 2;
+  padding: 14px 16px 12px;
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* 空状态 */
-.empty-tip {
-  margin: auto;
-  text-align: center;
-  color: #64748b;
-  font-size: 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.empty-emoji {
-  width: 64px;
-  height: 64px;
-  border-radius: 24px;
-  background: #ffffff;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  font-size: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 4px;
-}
-
-.empty-sub {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-/* 日期分隔线 */
-.date-divider {
-  align-self: center;
-  padding: 3px 12px;
-  border-radius: 10px;
-  background: rgba(100, 116, 139, 0.12);
-  backdrop-filter: blur(4px);
-  font-size: 11px;
-  color: #64748b;
-  margin: 2px 0;
-}
-
-/* 消息行 */
-.msg-row {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-
-.msg-row-self {
-  flex-direction: row-reverse;
-}
-
-.msg-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 14px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-}
-
-.msg-avatar-self {
-  border-color: #dbeafe;
-  background: #eff6ff;
-}
-
-.msg-body {
-  display: flex;
-  flex-direction: column;
-  max-width: 72%;
-}
-
-.msg-row-self .msg-body {
+  justify-content: space-between;
   align-items: flex-end;
+  flex-shrink: 0;
+  user-select: none;
+}
+.top-eyebrow { display: block; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.7; margin-bottom: 6px; }
+.top-title { display: block; font-size: 22px; font-weight: 800; }
+.top-subtitle { display: block; font-size: 12px; opacity: 0.75; margin-top: 6px; }
+.top-chip {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+}
+.theme-female .top-chip { background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 183, 197, 0.28); color: #7a5564; }
+.theme-male .top-chip { background: rgba(0, 229, 255, 0.12); border: 1px solid rgba(0, 229, 255, 0.4); color: #00e5ff; border-radius: 6px; letter-spacing: 1px; }
+
+/* 消息列表 */
+.chat-list {
+  flex: 1;
+  padding: 8px 14px 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+.loading-tip { text-align: center; margin-bottom: 15px; }
+.glass-tag {
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f0ebff;
+  padding: 6px 16px;
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-/* 气泡 */
-.msg-item {
-  padding: 10px 14px;
+.message-row { display: flex; margin-bottom: 18px; width: 100%; align-items: flex-end; }
+.self { justify-content: flex-end; }
+.avatar {
+  width: 44px;
+  height: 44px;
   border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 18px rgba(8, 5, 19, 0.2);
+  flex-shrink: 0;
+  object-fit: cover;
+  background: #fff;
+}
+.theme-male .avatar { border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.35); box-shadow: 0 10px 18px rgba(0, 0, 0, 0.4); }
+.left-avatar { margin-right: 12px; }
+.right-avatar { margin-left: 12px; }
+
+.content-box { max-width: 72%; display: flex; flex-direction: column; user-select: none; -webkit-user-select: none; }
+.self .content-box { align-items: flex-end; }
+.nickname { font-size: 11px; margin-bottom: 6px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.18); margin-left: 4px; margin-right: 4px; }
+.theme-female .nickname { color: rgba(108, 82, 96, 0.8); }
+.theme-male .nickname { color: rgba(0, 229, 255, 0.7); }
+
+.bubble {
+  padding: 12px 15px;
   font-size: 15px;
-  line-height: 1.55;
-  word-break: break-word;
-  letter-spacing: 0.2px;
+  word-break: break-all;
+  line-height: 1.7;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: relative;
+}
+.bubble-text { display: block; white-space: pre-wrap; }
+.bubble-time { display: block; margin-top: 8px; font-size: 10px; opacity: 0.7; text-align: right; }
+.theme-female .left-bubble { background: rgba(255, 255, 255, 0.9); color: #3a2c3f; border-radius: 20px 20px 20px 8px; }
+.theme-female .right-bubble {
+  background: linear-gradient(135deg, rgba(255, 183, 197, 0.95) 0%, rgba(255, 217, 61, 0.95) 100%);
+  color: #5a3947;
+  border-radius: 20px 20px 8px 20px;
+}
+.theme-male .left-bubble { background: rgba(12, 16, 22, 0.9); color: #dff7ff; border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.2); }
+.theme-male .right-bubble {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.18) 0%, rgba(106, 125, 255, 0.18) 100%);
+  color: #e8faff;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 229, 255, 0.35);
 }
 
-/* 自己：蓝紫渐变 */
-.msg-self {
-  background: linear-gradient(135deg, #3b82f6, #6366f1);
-  color: #ffffff;
-  border-bottom-right-radius: 6px;
-  box-shadow: 0 3px 10px rgba(79, 102, 241, 0.28);
+.img-bubble {
+  max-width: 176px;
+  display: block;
+  border-radius: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
 }
+.theme-male .img-bubble { border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.35); box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35); }
 
-/* 对方：白色卡片 */
-.msg-other {
-  background: #ffffff;
-  color: #1f2937;
-  border-bottom-left-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
+.bottom-spacer { height: 20px; }
 
-.msg-time {
-  margin-top: 4px;
-  font-size: 10px;
-  color: #94a3b8;
-  padding: 0 2px;
-}
-
-/* 发送失败重试条 */
+/* 重试条 */
 .retry-bar {
   display: flex;
   align-items: center;
@@ -396,8 +644,9 @@ onUnmounted(() => {
   background: #fffbeb;
   border-top: 1px solid #fde68a;
   flex-shrink: 0;
+  position: relative;
+  z-index: 2;
 }
-
 .retry-text {
   flex: 1;
   font-size: 12px;
@@ -408,62 +657,61 @@ onUnmounted(() => {
 }
 
 /* 底部输入栏 */
-.input-bar {
+.footer {
   display: flex;
-  padding: 10px 12px;
-  padding-bottom: calc(10px + constant(safe-area-inset-bottom));
-  padding-bottom: calc(10px + env(safe-area-inset-bottom));
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  align-items: center;
   gap: 10px;
-  align-items: center;
+  padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
   flex-shrink: 0;
+  position: relative;
+  z-index: 2;
 }
+.glass-footer {
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  box-shadow: 0 -10px 24px rgba(0, 0, 0, 0.16);
+}
+.theme-female .glass-footer { background: rgba(255, 255, 255, 0.7); border-top: 1px solid rgba(255, 183, 197, 0.25); }
+.theme-male .glass-footer { background: rgba(7, 10, 16, 0.92); border-top: 1px solid rgba(0, 229, 255, 0.2); }
 
-.input-field {
+.icon-btn { font-size: 22px; transition: transform 0.1s; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15)); flex-shrink: 0; cursor: pointer; }
+.theme-female .icon-btn { color: #b86a7f; }
+.theme-male .icon-btn { color: #00e5ff; }
+.icon-btn:active { transform: scale(0.85); }
+
+.input-box {
   flex: 1;
-  padding: 0;
-}
-
-.input-field :deep(.van-field__control) {
-  padding: 11px 18px;
-  border: none;
-  border-radius: 24px;
-  outline: none;
+  height: 42px;
+  padding: 0 16px;
   font-size: 15px;
-  background-color: #f1f5f9;
-  transition: background-color 0.2s, box-shadow 0.2s;
+  border: 1px solid transparent;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+  min-width: 0;
 }
+.theme-female .input-box { background: rgba(255, 255, 255, 0.85); border-radius: 22px; color: #4b3046; border-color: rgba(255, 183, 197, 0.35); }
+.theme-male .input-box { background: rgba(0, 229, 255, 0.08); border-radius: 6px; color: #e8faff; border-color: rgba(0, 229, 255, 0.3); }
 
-.input-field :deep(.van-field__control:focus) {
-  background-color: #ffffff;
-  box-shadow: 0 0 0 2px #bfdbfe;
-}
-
-/* 发送按钮：渐变圆钮，有内容时点亮 */
 .send-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: #cbd5e1;
-  color: #ffffff;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 0 16px;
+  height: 42px;
+  line-height: 42px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.25s ease;
   flex-shrink: 0;
   cursor: pointer;
-  transition: background 0.25s, transform 0.15s;
 }
-
-.send-btn-active {
-  background: linear-gradient(135deg, #3b82f6, #6366f1);
-  box-shadow: 0 3px 10px rgba(79, 102, 241, 0.35);
+.theme-female .send-btn { background: rgba(255, 183, 197, 0.2); color: #8c5567; border-radius: 22px; }
+.theme-male .send-btn { background: rgba(0, 229, 255, 0.12); color: #00e5ff; border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.35); }
+.theme-female .send-btn.btn-active {
+  background: linear-gradient(135deg, #ffb7c5 0%, #ffd93d 100%);
+  color: #5a3947;
+  box-shadow: 0 10px 20px rgba(255, 183, 197, 0.28);
 }
-
-.send-btn:active {
-  transform: scale(0.9);
+.theme-male .send-btn.btn-active {
+  background: linear-gradient(135deg, #00e5ff 0%, #6a7dff 100%);
+  color: #041018;
+  box-shadow: 0 10px 20px rgba(0, 229, 255, 0.28);
 }
 </style>

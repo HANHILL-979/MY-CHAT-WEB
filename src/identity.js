@@ -2,10 +2,11 @@ import { ref, computed } from 'vue'
 
 const STORAGE_KEY = 'my-space-identity'
 
-// 双人资料：展示名 + 头像（数据库标识仍为 user_a/user_b，不动历史数据）
+// 双人资料：展示名 + 头像 + 照片头像 + 性别主题（数据库标识仍为 user_a/user_b，不动历史数据）
+// 角色映射复刻 Linda1：大椰树=boy(男性视角/赛博主题)，小椰宝=girl(女性视角/治愈主题)
 const PROFILES = {
-  user_a: { name: '大椰树', avatar: '🌴' },
-  user_b: { name: '小椰宝', avatar: '🥥' },
+  user_a: { name: '大椰树', avatar: '🌴', img: '/static/photo8.jpg', role: 'boy' },
+  user_b: { name: '小椰宝', avatar: '🥥', img: '/static/photo1.jpg', role: 'girl' },
 }
 const ID_TO_NAME = {
   user_a: '大椰树',
@@ -42,8 +43,19 @@ function resolveIdentity() {
   return 'user_a'
 }
 
-// 当前设备绑定的身份（已锁定，不再提供切换 UI）
+// 当前设备绑定的身份（可切换，见我的页 / 聊天页右上角胶囊）
 export const identity = ref(resolveIdentity())
 
 // 当前身份展示名（如 "大椰树"）
 export const displayName = computed(() => ID_TO_NAME[identity.value])
+
+// 对方身份 id
+export const otherIdentity = computed(() => (identity.value === 'user_a' ? 'user_b' : 'user_a'))
+
+// 按数据库 sender 值取昵称（兼容历史数据）
+export function nameOf(sender) {
+  if (PROFILES[sender]) return PROFILES[sender].name
+  if (sender === '小郭') return '大椰树'
+  if (sender === '黄其宏') return '小椰宝'
+  return sender || ''
+}
