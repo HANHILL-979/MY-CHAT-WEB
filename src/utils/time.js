@@ -9,8 +9,12 @@ export function getTimestamp(value) {
     if (!Number.isNaN(numeric) && value.trim() !== '') {
       return numeric < 1e12 ? numeric * 1000 : numeric
     }
-    const parsed = Date.parse(value.replace(/-/g, '/'))
-    return Number.isNaN(parsed) ? 0 : parsed
+    // 先按 ISO 8601 原样解析（Supabase created_at 形如 2026-09-09T19:19:45+00:00）
+    const iso = Date.parse(value)
+    if (!Number.isNaN(iso)) return iso
+    // 兼容 "YYYY-MM-DD HH:mm:ss" 旧格式（部分浏览器不支持短横线日期）
+    const legacy = Date.parse(value.replace(/-/g, '/'))
+    return Number.isNaN(legacy) ? 0 : legacy
   }
   if (typeof value === 'object') {
     if (typeof value.getTime === 'function') return value.getTime()

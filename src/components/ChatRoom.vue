@@ -44,10 +44,10 @@ function isSelf(msg) {
 }
 
 // 消息归一化：统一 create_time 毫秒 + HH:MM 显示时间
+// 注意：解析失败时不再用 Date.now() 伪造时间（那会导致去重 key 错乱 + 时间显示错误）
 function normalizeMessage(item = {}) {
   const ts = getTimestamp(item.created_at || item.create_time)
-  const safeTs = ts || Date.now()
-  return { ...item, create_time: safeTs, time: formatTime(safeTs) }
+  return { ...item, create_time: ts, time: ts ? formatTime(ts) : '' }
 }
 
 function scrollToBottom() {
@@ -67,12 +67,15 @@ function activeTouch() {
   lastActionTime = Date.now()
 }
 
-// ---- 本地缓存（Linda1：最近 200 条，防白屏） ----
+// ---- 本地缓存（防白屏；图片 dataURL 过大不入缓存，避免 JSON 解析卡顿与 localStorage 爆仓） ----
 function saveToLocal() {
   if (saveTimer) clearTimeout(saveTimer)
   saveTimer = setTimeout(() => {
     try {
-      localStorage.setItem('chat_history_cache', JSON.stringify(messages.value.slice(-200)))
+      const slim = messages.value
+        .slice(-50)
+        .map((m) => (typeof m.content === 'string' && m.content.length > 30000 ? { ...m, content: '[图片]' } : m))
+      localStorage.setItem('chat_history_cache', JSON.stringify(slim))
     } catch (e) {
       console.warn('缓存聊天记录失败', e)
     }
@@ -83,7 +86,18 @@ function loadFromLocal() {
   try {
     const local = JSON.parse(localStorage.getItem('chat_history_cache') || '[]')
     if (Array.isArray(local) && local.length > 0) {
-      messages.value = local.map(normalizeMessage).sort((a, b) => a.create_time - b.create_time)
+      // 按 id 去重（历史 bug 可能写入过重复消息），并重新归一化修复时间
+      const seen = new Set()
+      messages.value = local
+        .filter((m) => {
+          const key = m.id != null ? m.id : `${m.create_time}_${m.sender}`
+          if (seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
+        .map(normalizeMessage)
+        .filter((m) => m.create_time > 0)
+        .sort((a, b) => a.create_time - b.create_time)
       scrollToBottom()
     }
   } catch (e) {
@@ -117,11 +131,19 @@ async function fetchNewMessages() {
       newData = newData.reverse()
     }
     if (newData.length > 0) {
-      const existIds = new Set(messages.value.map((m) => m.id))
+      const existIds = new Set(messages.value.filter((m) => m.id != null).map((m) => m.id))
       const existKeys = new Set(messages.value.map((m) => `${m.create_time}_${m.sender}`))
-      const realNewMsgs = newData.filter(
-        (m) => !m.id || (!existIds.has(m.id) && !existKeys.has(`${m.create_time}_${m.sender}`))
-      )
+      const realNewMsgs = newData.filter((m) => {
+        if (m.id != null) return !existIds.has(m.id)
+        return !existKeys.has(`${m.create_time}_${m.sender}`)
+      })
+      // 用服务端数据回填缓存中的 [图片] 占位（图片 dataURL 未入本地缓存）
+      newData.forEach((m) => {
+        if (m.id != null && typeof m.content === 'string' && m.content.startsWith('data:image')) {
+          const idx = messages.value.findIndex((x) => x.id === m.id && x.content === '[图片]')
+          if (idx > -1) messages.value.splice(idx, 1, normalizeMessage(m))
+        }
+      })
       if (realNewMsgs.length > 0) {
         messages.value = [...messages.value, ...realNewMsgs].sort((a, b) => a.create_time - b.create_time)
         saveToLocal()
@@ -195,6 +217,23 @@ function stopPolling() {
   }
 }
 
+// 发送/拉取回调统一入口：按 id 查重后再入列（防止轮询/realtime 已先插入同一案消息）
+function appendMessage(raw) {
+  const msg = normalizeMessage(raw)
+  if (msg.id != null) {
+    const idx = messages.value.findIndex((m) => m.id === msg.id)
+    if (idx > -1) {
+      messages.value.splice(idx, 1, msg) // 已存在则用服务端权威数据覆盖
+      return
+    }
+  } else if (messages.value.some((m) => m.create_time === msg.create_time && m.sender === msg.sender)) {
+    return
+  }
+  messages.value.push(msg)
+  saveToLocal()
+  scrollToBottom()
+}
+
 // ---- 发送文本 ----
 async function doSend(content) {
   sending.value = true
@@ -204,11 +243,7 @@ async function doSend(content) {
     showToast('发送失败，请重试')
   } else {
     failedContent.value = ''
-    if (data && data[0]) {
-      messages.value.push(normalizeMessage(data[0]))
-      saveToLocal()
-      scrollToBottom()
-    }
+    if (data && data[0]) appendMessage(data[0])
     input.value = ''
   }
   sending.value = false
@@ -245,11 +280,7 @@ async function chooseImage() {
       .insert([{ sender: identity.value, content: dataUrl }])
       .select()
     if (error) throw error
-    if (data && data[0]) {
-      messages.value.push(normalizeMessage(data[0]))
-      saveToLocal()
-      scrollToBottom()
-    }
+    if (data && data[0]) appendMessage(data[0])
   } catch (e) {
     console.error('图片发送失败', e)
     showToast('上传失败，请重试')
