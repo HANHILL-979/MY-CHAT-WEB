@@ -720,7 +720,11 @@ onUnmounted(() => {
   100% { transform: translateX(120%); opacity: 0; }
 }
 
-.moment-card { animation: cardIn 0.5s ease both; animation-delay: calc(var(--i, 0) * 40ms); }
+.moment-card {
+  animation: cardIn 0.4s cubic-bezier(0.23, 1, 0.32, 1) both;
+  /* 逐张错落入场，封顶 8 张避免长列表尾部空等 */
+  animation-delay: calc(min(var(--i, 0), 8) * 40ms);
+}
 
 /* 女性视角 hero */
 .theme-female .hero {
@@ -730,7 +734,7 @@ onUnmounted(() => {
   overflow: hidden;
   background: linear-gradient(135deg, rgba(255, 166, 201, 0.92), rgba(144, 141, 255, 0.92));
   box-shadow: 0 18px 40px rgba(114, 84, 177, 0.18);
-  animation: heroRise 0.6s ease both;
+  animation: heroRise 0.5s cubic-bezier(0.23, 1, 0.32, 1) both;
   flex-shrink: 0;
 }
 .theme-female .hero-overlay {
@@ -779,7 +783,7 @@ onUnmounted(() => {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   box-shadow: 0 10px 28px rgba(129, 100, 160, 0.08);
-  animation: heroRise 0.6s ease 0.08s both;
+  animation: heroRise 0.5s cubic-bezier(0.23, 1, 0.32, 1) 0.08s both;
   flex-shrink: 0;
 }
 .theme-female .summary-item { flex: 1; text-align: center; }
@@ -797,7 +801,7 @@ onUnmounted(() => {
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
   position: relative;
   overflow: hidden;
-  animation: heroRise 0.6s ease both;
+  animation: heroRise 0.5s cubic-bezier(0.23, 1, 0.32, 1) both;
   flex-shrink: 0;
 }
 .theme-male .male-hero::after {
@@ -899,14 +903,15 @@ onUnmounted(() => {
   border-radius: 16px;
   display: flex;
   align-items: center;
-  padding: 0;
-  width: 0;
+  padding: 0 6px;
+  width: 198px;
   overflow: hidden;
   opacity: 0;
-  transition: all 0.2s ease-in-out;
+  clip-path: inset(0 100% 0 0 round 16px);
+  transition: clip-path 0.22s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.16s ease-out;
   box-shadow: 0 14px 30px rgba(27, 17, 48, 0.24);
 }
-.pop-menu.show { width: 198px; opacity: 1; padding: 0 6px; }
+.pop-menu.show { clip-path: inset(0 0 0 0 round 16px); opacity: 1; }
 .menu-item {
   flex: 1;
   text-align: center;
@@ -1089,4 +1094,22 @@ onUnmounted(() => {
   resize: none;
 }
 .theme-male .comment-input { background: rgba(0, 229, 255, 0.08); border-color: rgba(0, 229, 255, 0.25); color: #e8faff; }
+
+/* 无障碍：系统开启“减弱动态效果”时，仅保留淡入、关闭位移与扫光 */
+@media (prefers-reduced-motion: reduce) {
+  .moment-card,
+  .theme-female .hero,
+  .theme-female .summary-strip,
+  .theme-male .male-hero,
+  .theme-male .male-stats {
+    animation: cardFade 0.3s ease-out both;
+    animation-delay: 0s;
+  }
+  .theme-male .male-hero::after { animation: none; }
+  .pop-menu { transition: opacity 0.16s ease-out; }
+}
+@keyframes cardFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 </style>

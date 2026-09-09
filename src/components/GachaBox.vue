@@ -261,7 +261,7 @@ function goBack() {
   border-radius: 25px;
   box-shadow: 0 8px 20px rgba(255, 154, 158, 0.4);
   border: none;
-  transition: all 0.2s;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
   cursor: pointer;
   font-family: inherit;
 }
@@ -388,5 +388,15 @@ function goBack() {
 @keyframes fall {
   0% { transform: translateY(0) rotate(0deg); opacity: 1; }
   100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
+/* 无障碍：减弱动态效果时关闭悬浮/摇晃/撒花位移，保留淡入 */
+@media (prefers-reduced-motion: reduce) {
+  .magic-box { animation: none; }
+  .box-shadow { animation: none; }
+  .shaking .magic-box { animation: fadeIn 0.4s ease-in-out infinite alternate; }
+  .result-emoji { animation: fadeIn 0.3s ease-out; }
+  .glow-bg { animation: none; opacity: 0.4; }
+  .confetti { display: none; }
 }
 </style>

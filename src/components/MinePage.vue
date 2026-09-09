@@ -618,10 +618,15 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  animation: pokeFade 0.2s ease-out;
+}
+@keyframes pokeFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .poke-content { text-align: center; }
 .big-heart { font-size: 110px; margin-bottom: 16px; }
-.pulse { animation: heartPulse 1.2s ease-in-out infinite; }
+.pulse { animation: heartPop 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) both, heartPulse 1.2s 0.3s ease-in-out infinite; }
 .poke-text { display: block; color: #fff; font-size: 18px; font-weight: 800; margin-bottom: 8px; }
 .poke-subtext { display: block; color: rgba(255, 255, 255, 0.8); font-size: 13px; }
 .poke-sparks { position: relative; width: 140px; height: 40px; margin: 10px auto 0; }
@@ -640,5 +645,22 @@ onUnmounted(() => {
   30% { opacity: 1; }
   60% { transform: translateY(-6px); opacity: 0.9; }
   100% { transform: translateY(-12px); opacity: 0; }
+}
+@keyframes heartPop {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* 无障碍：减弱动态效果时爱心/星光只保留透明度变化 */
+@media (prefers-reduced-motion: reduce) {
+  .poke-overlay { animation: none; }
+  .pulse { animation: heartPop 0.2s ease-out both; }
+  .spark { animation-name: sparkleStill; }
+}
+@keyframes sparkleStill {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  60% { opacity: 0.9; }
+  100% { opacity: 0; }
 }
 </style>
