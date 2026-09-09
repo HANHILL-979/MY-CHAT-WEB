@@ -27,12 +27,11 @@ body {
   height: 100%;
 }
 
-/* 彻底隐藏 Netlify 注入的右下角悬浮水印与挂件 */
+/* 彻底隐藏 Netlify 注入的右下角悬浮水印、挂件与徽章 */
 iframe[data-netlify-drawer],
-[id^="netlify-drawer"],
-.netlify-badge,
-netlify-drawer,
-div[class*="netlify"] {
+[id^="netlify"],
+[class*="netlify"],
+netlify-drawer {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
