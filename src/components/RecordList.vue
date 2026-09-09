@@ -194,8 +194,8 @@ onMounted(() => {
     <template v-else>
       <div class="male-header">
         <div class="male-title-group">
-          <span class="male-eyebrow">LOVE::TASKS</span>
-          <span class="male-title">CHECKLIST STREAM</span>
+          <span class="male-eyebrow">我们的 100 件小事</span>
+          <span class="male-title">恋爱清单</span>
         </div>
         <div class="male-count">
           <span class="male-count-num">{{ doneCount }}</span>
@@ -205,7 +205,7 @@ onMounted(() => {
           <div class="male-progress-bar">
             <div class="male-progress-inner" :style="{ width: doneCount + '%' }"></div>
           </div>
-          <span class="male-progress-note">SYNC {{ doneCount }} DONE</span>
+          <span class="male-progress-note">已完成 {{ doneCount }} 项</span>
         </div>
       </div>
 
@@ -220,7 +220,7 @@ onMounted(() => {
           <span class="row-index">{{ String(index + 1).padStart(2, '0') }}</span>
           <div class="row-body">
             <span class="row-title">{{ item.title }}</span>
-            <span class="row-status">{{ item.done ? 'DONE' : 'TODO' }}</span>
+            <span class="row-status">{{ item.done ? '已完成' : '待完成' }}</span>
           </div>
           <span class="row-flag">{{ item.done ? '✓' : '…' }}</span>
         </div>
@@ -289,21 +289,14 @@ onMounted(() => {
   -webkit-overflow-scrolling: touch;
 }
 .theme-female { background: linear-gradient(180deg, #fffdf5 0%, #ffeef3 100%); }
-.theme-male { background: linear-gradient(180deg, #121212 0%, #0d1118 100%); }
+.theme-male { background: var(--ios-bg); }
 .theme-male::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background:
-    repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.08) 0, rgba(0, 229, 255, 0.08) 1px, transparent 1px, transparent 30px),
-    repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0, rgba(0, 229, 255, 0.05) 1px, transparent 1px, transparent 30px);
-  opacity: 0.16;
-  pointer-events: none;
+  content: none; /* iOS 风格：无网格装饰线 */
 }
 
 .back-bar { margin-bottom: 10px; }
 .back-btn { font-size: 15px; color: #ff6b81; font-weight: 500; cursor: pointer; }
-.theme-male .back-btn { color: #00e5ff; font-size: 12px; letter-spacing: 1px; }
+.theme-male .back-btn { color: var(--ios-accent); font-size: 14px; }
 
 /* 女性视角头部 */
 .header-card {
@@ -355,43 +348,42 @@ onMounted(() => {
 .done-stamp { position: absolute; bottom: 5px; right: 5px; opacity: 0.8; }
 .stamp-text { font-size: 18px; }
 
-/* 男性视角 */
+/* 男性视角（iOS 分组列表风） */
 .male-header {
-  background: rgba(10, 12, 18, 0.92);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  border-radius: 10px;
+  background: var(--ios-surface);
+  border-radius: 16px;
   padding: 16px;
   margin-bottom: 16px;
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
 }
 .male-title-group { display: flex; flex-direction: column; gap: 6px; }
-.male-eyebrow { font-size: 10px; letter-spacing: 2px; color: rgba(0, 229, 255, 0.7); }
-.male-title { font-size: 18px; font-weight: 700; color: #e8faff; }
+.male-eyebrow { font-size: 12px; color: var(--ios-text-2); }
+.male-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--ios-text); }
 .male-count { margin-top: 8px; display: flex; align-items: baseline; gap: 4px; }
-.male-count-num { font-size: 26px; font-weight: 700; color: #00e5ff; }
-.male-count-total { font-size: 12px; color: rgba(159, 200, 212, 0.8); }
+.male-count-num { font-size: 26px; font-weight: 700; color: var(--ios-accent); }
+.male-count-total { font-size: 13px; color: var(--ios-text-2); }
 .male-progress { margin-top: 12px; }
-.male-progress-bar { height: 6px; background: rgba(0, 229, 255, 0.12); border-radius: 999px; overflow: hidden; }
-.male-progress-inner { height: 100%; background: linear-gradient(90deg, #00e5ff, #6a7dff); }
-.male-progress-note { display: block; margin-top: 8px; font-size: 10px; letter-spacing: 1px; color: rgba(0, 229, 255, 0.7); }
+.male-progress-bar { height: 6px; background: var(--ios-fill); border-radius: 999px; overflow: hidden; }
+.male-progress-inner { height: 100%; background: var(--ios-accent); }
+.male-progress-note { display: block; margin-top: 8px; font-size: 11px; color: var(--ios-text-2); }
 
-.male-list { display: flex; flex-direction: column; gap: 10px; }
+.male-list { display: flex; flex-direction: column; gap: 8px; }
 .male-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
-  background: rgba(9, 12, 18, 0.92);
-  border: 1px solid rgba(0, 229, 255, 0.18);
-  border-radius: 8px;
+  padding: 13px 14px;
+  background: var(--ios-surface);
+  border-radius: var(--ios-radius);
   cursor: pointer;
 }
-.male-row.done { border-color: rgba(0, 229, 255, 0.5); box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.12); }
-.row-index { font-size: 12px; color: rgba(0, 229, 255, 0.7); letter-spacing: 1px; }
+.male-row:active { background: var(--ios-surface-3); }
+.male-row.done { box-shadow: inset 3px 0 0 var(--ios-green); }
+.row-index { font-size: 13px; color: var(--ios-text-3); font-variant-numeric: tabular-nums; }
 .row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-.row-title { font-size: 13px; color: #e8faff; }
-.row-status { font-size: 10px; color: rgba(159, 200, 212, 0.7); letter-spacing: 1px; }
-.row-flag { font-size: 14px; color: #00e5ff; }
+.row-title { font-size: 14px; color: var(--ios-text); }
+.row-status { font-size: 11px; color: var(--ios-text-2); }
+.row-flag { font-size: 14px; color: var(--ios-green); }
 
 /* 弹窗 */
 .modal-mask {
@@ -460,15 +452,15 @@ onMounted(() => {
 .memory-img { width: 100%; height: 250px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); object-fit: cover; cursor: pointer; }
 .footer-msg { text-align: center; color: #aaa; font-size: 12px; }
 
-.theme-male .modal-box { background: rgba(10, 12, 18, 0.96); border-radius: 10px; border: 1px solid rgba(0, 229, 255, 0.22); box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45); }
-.theme-male .m-title { color: #e8faff; }
-.theme-male .m-sub { color: rgba(159, 200, 212, 0.75); }
-.theme-male .m-date { color: #00e5ff; }
-.theme-male .confirm-btn { background: linear-gradient(135deg, #00e5ff, #6a7dff); color: #041018; box-shadow: 0 8px 18px rgba(0, 229, 255, 0.3); }
-.theme-male .upload-area { background: rgba(0, 229, 255, 0.05); border: 1px dashed rgba(0, 229, 255, 0.3); }
-.theme-male .placeholder { color: rgba(0, 229, 255, 0.5); }
-.theme-male .memory-img { border-radius: 6px; }
-.theme-male .footer-msg { color: rgba(159, 200, 212, 0.7); }
+.theme-male .modal-box { background: var(--ios-surface); border-radius: 16px; box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5); }
+.theme-male .m-title { color: var(--ios-text); }
+.theme-male .m-sub { color: var(--ios-text-2); }
+.theme-male .m-date { color: var(--ios-accent); }
+.theme-male .confirm-btn { background: var(--ios-accent); color: #ffffff; box-shadow: none; }
+.theme-male .upload-area { background: var(--ios-fill); border: none; }
+.theme-male .placeholder { color: var(--ios-text-2); }
+.theme-male .memory-img { border-radius: 12px; }
+.theme-male .footer-msg { color: var(--ios-text-2); }
 
 /* 数据库未就绪提示 */
 .missing-tip {
@@ -481,5 +473,5 @@ onMounted(() => {
   border: 1px solid rgba(255, 180, 84, 0.4);
   color: #b8860b;
 }
-.theme-male .missing-tip { background: rgba(255, 180, 84, 0.1); color: #ffca7a; }
+.theme-male .missing-tip { background: rgba(255, 159, 10, 0.12); border-color: rgba(255, 159, 10, 0.35); color: var(--ios-orange); }
 </style>

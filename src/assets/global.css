@@ -34,25 +34,33 @@ body {
   color: #4b3046;
 }
 
-/* 男性视角：极客感 · 赛博秩序（等宽字体 + 网格线 + 扫描线） */
+/* 男性视角：iOS 深色模式 · 苹果设计语言（真黑背景 + 分层卡片 + 系统蓝） */
 .theme-male {
-  font-family: "JetBrains Mono", "SFMono-Regular", "Consolas", "Liberation Mono", Menlo, monospace;
-  color: #e8faff;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Segoe UI", "Microsoft YaHei", sans-serif;
+  color: #f5f5f7;
+  /* ---- iOS 深色模式设计令牌（组件内 .theme-male 规则统一消费） ---- */
+  --ios-bg: #000000;            /* 系统背景：真黑 */
+  --ios-surface: #1c1c1e;       /* 二级表面：卡片 */
+  --ios-surface-2: #2c2c2e;     /* 三级表面：嵌套卡片/按钮 */
+  --ios-surface-3: #3a3a3c;     /* 四级表面：高亮行 */
+  --ios-fill: rgba(120, 120, 128, 0.24);   /* 系统填充：输入框底 */
+  --ios-accent: #0a84ff;        /* iOS 蓝（深色模式） */
+  --ios-green: #30d158;
+  --ios-red: #ff453a;
+  --ios-orange: #ff9f0a;
+  --ios-text: #f5f5f7;                  /* 主文本 */
+  --ios-text-2: rgba(235, 235, 245, 0.6);  /* 次文本 */
+  --ios-text-3: rgba(235, 235, 245, 0.3);  /* 三级文本 */
+  --ios-separator: rgba(84, 84, 88, 0.6);  /* 分隔线 */
+  --ios-radius: 12px;            /* iOS 卡片连续曲率圆角 */
 }
 
-/* 赛博网格背景（挂在 .theme-male 上，各页面用 ::before 局部控制浓淡） */
+/* 网格背景类保留挂载点但不再绘制（iOS 风格无装饰线，用层级色差分区） */
 .theme-male-grid {
   position: relative;
 }
 .theme-male-grid::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.08) 0, rgba(0, 229, 255, 0.08) 1px, transparent 1px, transparent 30px),
-    repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0, rgba(0, 229, 255, 0.05) 1px, transparent 1px, transparent 30px);
-  opacity: 0.18;
-  pointer-events: none;
+  content: none;
 }
 
 /* 主题渐变主按钮 */
@@ -61,8 +69,9 @@ body {
   color: #5a3947;
 }
 .theme-male .primary-btn {
-  background: linear-gradient(135deg, #00e5ff, #6a7dff);
-  color: #041018;
+  background: var(--ios-accent);
+  color: #ffffff;
+  border-radius: 12px;
 }
 
 /* 通用滚动区域 */

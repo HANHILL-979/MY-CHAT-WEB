@@ -422,11 +422,11 @@ onUnmounted(() => {
       </template>
       <template v-else>
         <div>
-          <span class="top-eyebrow">SECURE LINK</span>
-          <span class="top-title">LOVER::NODE</span>
-          <span class="top-subtitle">SYNC {{ messages.length }} MSG</span>
+          <span class="top-eyebrow">私密频道</span>
+          <span class="top-title">秘密基地</span>
+          <span class="top-subtitle">共 {{ messages.length }} 条消息</span>
         </div>
-        <div class="top-chip" @click.stop="emit('switch-role')">ONLINE</div>
+        <div class="top-chip" @click.stop="emit('switch-role')">在线</div>
       </template>
     </div>
 
@@ -517,35 +517,14 @@ onUnmounted(() => {
   color: #4b3046;
 }
 .chat-room.theme-male {
-  font-family: "JetBrains Mono", "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
-  color: #e8faff;
+  font-family: inherit; /* 跟随全局 iOS 系统字体 */
+  color: var(--ios-text);
 }
 .chat-room.theme-male::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.08) 0, rgba(0, 229, 255, 0.08) 1px, transparent 1px, transparent 32px),
-    repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0, rgba(0, 229, 255, 0.05) 1px, transparent 1px, transparent 32px);
-  opacity: 0.16;
-  pointer-events: none;
-  z-index: 0;
+  content: none; /* iOS 风格：无网格装饰线 */
 }
 .chat-room.theme-male::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -40%;
-  width: 40%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.8), transparent);
-  animation: scanLine 5s linear infinite;
-  opacity: 0.5;
-  z-index: 0;
-}
-@keyframes scanLine {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(300%); }
+  content: none; /* iOS 风格：无扫描线动画 */
 }
 
 .ambient {
@@ -558,8 +537,8 @@ onUnmounted(() => {
 }
 .theme-female .ambient-one { width: 240px; height: 240px; right: -70px; top: 40px; background: rgba(255, 183, 197, 0.32); }
 .theme-female .ambient-two { width: 260px; height: 260px; left: -90px; bottom: 140px; background: rgba(255, 217, 61, 0.22); }
-.theme-male .ambient-one { width: 260px; height: 260px; right: -80px; top: 30px; background: rgba(0, 229, 255, 0.18); }
-.theme-male .ambient-two { width: 240px; height: 240px; left: -70px; bottom: 120px; background: rgba(106, 125, 255, 0.2); }
+.theme-male .ambient-one { width: 260px; height: 260px; right: -80px; top: 30px; background: rgba(10, 132, 255, 0.1); }
+.theme-male .ambient-two { width: 240px; height: 240px; left: -70px; bottom: 120px; background: rgba(120, 120, 128, 0.1); }
 
 /* 顶栏 */
 .top-bar {
@@ -583,7 +562,7 @@ onUnmounted(() => {
   cursor: pointer;
 }
 .theme-female .top-chip { background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 183, 197, 0.28); color: #7a5564; }
-.theme-male .top-chip { background: rgba(0, 229, 255, 0.12); border: 1px solid rgba(0, 229, 255, 0.4); color: #00e5ff; border-radius: 6px; letter-spacing: 1px; }
+.theme-male .top-chip { background: rgba(28, 28, 30, 0.72); border: none; color: var(--ios-text-2); border-radius: 999px; }
 
 /* 消息列表 */
 .chat-list {
@@ -618,7 +597,7 @@ onUnmounted(() => {
   object-fit: cover;
   background: #fff;
 }
-.theme-male .avatar { border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.35); box-shadow: 0 10px 18px rgba(0, 0, 0, 0.4); }
+.theme-male .avatar { border-radius: 50%; border: none; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); }
 .left-avatar { margin-right: 12px; }
 .right-avatar { margin-left: 12px; }
 
@@ -626,7 +605,7 @@ onUnmounted(() => {
 .self .content-box { align-items: flex-end; }
 .nickname { font-size: 11px; margin-bottom: 6px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.18); margin-left: 4px; margin-right: 4px; }
 .theme-female .nickname { color: rgba(108, 82, 96, 0.8); }
-.theme-male .nickname { color: rgba(0, 229, 255, 0.7); }
+.theme-male .nickname { color: var(--ios-text-2); text-shadow: none; }
 
 .bubble {
   padding: 12px 15px;
@@ -646,12 +625,15 @@ onUnmounted(() => {
   color: #5a3947;
   border-radius: 20px 20px 8px 20px;
 }
-.theme-male .left-bubble { background: rgba(12, 16, 22, 0.9); color: #dff7ff; border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.2); }
+.theme-male .left-bubble { background: var(--ios-surface-2); color: var(--ios-text); border-radius: 20px 20px 20px 6px; border: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
 .theme-male .right-bubble {
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.18) 0%, rgba(106, 125, 255, 0.18) 100%);
-  color: #e8faff;
-  border-radius: 6px;
-  border: 1px solid rgba(0, 229, 255, 0.35);
+  background: var(--ios-accent);
+  color: #ffffff;
+  border-radius: 20px 20px 6px 20px;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .img-bubble {
@@ -662,7 +644,7 @@ onUnmounted(() => {
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
   cursor: pointer;
 }
-.theme-male .img-bubble { border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.35); box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35); }
+.theme-male .img-bubble { border-radius: 16px; border: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
 
 .bottom-spacer { height: 20px; }
 
@@ -703,11 +685,11 @@ onUnmounted(() => {
   box-shadow: 0 -10px 24px rgba(0, 0, 0, 0.16);
 }
 .theme-female .glass-footer { background: rgba(255, 255, 255, 0.7); border-top: 1px solid rgba(255, 183, 197, 0.25); }
-.theme-male .glass-footer { background: rgba(7, 10, 16, 0.92); border-top: 1px solid rgba(0, 229, 255, 0.2); }
+.theme-male .glass-footer { background: rgba(28, 28, 30, 0.92); border-top: 0.5px solid var(--ios-separator); box-shadow: none; }
 
 .icon-btn { font-size: 22px; transition: transform 0.1s; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15)); flex-shrink: 0; cursor: pointer; }
 .theme-female .icon-btn { color: #b86a7f; }
-.theme-male .icon-btn { color: #00e5ff; }
+.theme-male .icon-btn { color: var(--ios-text-2); filter: none; }
 .icon-btn:active { transform: scale(0.85); }
 
 .input-box {
@@ -721,7 +703,7 @@ onUnmounted(() => {
   min-width: 0;
 }
 .theme-female .input-box { background: rgba(255, 255, 255, 0.85); border-radius: 22px; color: #4b3046; border-color: rgba(255, 183, 197, 0.35); }
-.theme-male .input-box { background: rgba(0, 229, 255, 0.08); border-radius: 6px; color: #e8faff; border-color: rgba(0, 229, 255, 0.3); }
+.theme-male .input-box { background: var(--ios-fill); border-radius: 999px; color: var(--ios-text); border-color: transparent; box-shadow: none; }
 
 .send-btn {
   padding: 0 16px;
@@ -729,20 +711,20 @@ onUnmounted(() => {
   line-height: 42px;
   font-size: 14px;
   font-weight: 700;
-  transition: all 0.25s ease;
+  transition: background-color 0.2s ease-out, color 0.2s ease-out;
   flex-shrink: 0;
   cursor: pointer;
 }
 .theme-female .send-btn { background: rgba(255, 183, 197, 0.2); color: #8c5567; border-radius: 22px; }
-.theme-male .send-btn { background: rgba(0, 229, 255, 0.12); color: #00e5ff; border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.35); }
+.theme-male .send-btn { background: transparent; color: var(--ios-accent); border-radius: 999px; border: none; font-weight: 600; }
 .theme-female .send-btn.btn-active {
   background: linear-gradient(135deg, #ffb7c5 0%, #ffd93d 100%);
   color: #5a3947;
   box-shadow: 0 10px 20px rgba(255, 183, 197, 0.28);
 }
 .theme-male .send-btn.btn-active {
-  background: linear-gradient(135deg, #00e5ff 0%, #6a7dff 100%);
-  color: #041018;
-  box-shadow: 0 10px 20px rgba(0, 229, 255, 0.28);
+  background: var(--ios-accent);
+  color: #ffffff;
+  box-shadow: none;
 }
 </style>

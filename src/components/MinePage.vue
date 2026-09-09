@@ -213,9 +213,9 @@ onUnmounted(() => {
     <template v-else>
       <div class="console-hero">
         <div class="console-left">
-          <span class="console-eyebrow">PROFILE CONSOLE</span>
-          <span class="console-title">LOVE::CORE</span>
-          <span class="console-sub">SYNC {{ progress }}%</span>
+          <span class="console-eyebrow">我的小宇宙</span>
+          <span class="console-title">个人主页</span>
+          <span class="console-sub">甜度 {{ progress }}%</span>
         </div>
         <div class="console-right" @click="emit('switch-role')">
           <img class="console-avatar" :src="myAvatar" alt="" />
@@ -229,15 +229,15 @@ onUnmounted(() => {
 
       <div class="console-stats">
         <div class="stat-card">
-          <span class="stat-label">PROGRESS</span>
+          <span class="stat-label">甜度</span>
           <span class="stat-value">{{ progress }}%</span>
         </div>
         <div class="stat-card">
-          <span class="stat-label">STATUS</span>
-          <span class="stat-value">LINK OK</span>
+          <span class="stat-label">状态</span>
+          <span class="stat-value">已连接</span>
         </div>
         <div class="stat-card">
-          <span class="stat-label">PARTNER</span>
+          <span class="stat-label">伴侣</span>
           <span class="stat-value">{{ partnerName }}</span>
         </div>
       </div>
@@ -247,70 +247,70 @@ onUnmounted(() => {
           <div class="action-left">
             <div class="icon-box"><img class="icon-img" src="/static/icon-diary.png" alt="" /></div>
             <div>
-              <span class="action-code">DIARY</span>
-              <span class="action-desc">Mood log archive</span>
+              <span class="action-code">心情日历</span>
+              <span class="action-desc">记录每天的心情</span>
             </div>
           </div>
-          <span class="action-go">OPEN</span>
+          <span class="action-go">打开</span>
         </div>
         <div class="action-row" @click="goPage('record')">
           <div class="action-left">
             <div class="icon-box"><img class="icon-img" src="/static/icon-task.png" alt="" /></div>
             <div>
-              <span class="action-code">TASKS</span>
-              <span class="action-desc">Love checklist</span>
+              <span class="action-code">恋爱清单</span>
+              <span class="action-desc">我们的 100 件小事</span>
             </div>
           </div>
-          <span class="action-go">OPEN</span>
+          <span class="action-go">打开</span>
         </div>
         <div class="action-row" @click="goPage('gacha')">
           <div class="action-left">
             <div class="icon-box"><img class="icon-img" src="/static/icon-box.png" alt="" /></div>
             <div>
-              <span class="action-code">MYSTERYBOX</span>
-              <span class="action-desc">Daily surprise</span>
+              <span class="action-code">心动盲盒</span>
+              <span class="action-desc">每天一个小惊喜</span>
             </div>
           </div>
-          <span class="action-go">OPEN</span>
+          <span class="action-go">打开</span>
         </div>
         <div class="action-row" @click="goPage('quiz')">
           <div class="action-left">
-            <div class="icon-box text-icon">SYNC</div>
+            <div class="icon-box text-icon">默契</div>
             <div>
-              <span class="action-code">SYNC TEST</span>
-              <span class="action-desc">Couple quiz</span>
+              <span class="action-code">默契挑战</span>
+              <span class="action-desc">测测你们有多同步</span>
             </div>
           </div>
-          <span class="action-go">OPEN</span>
+          <span class="action-go">打开</span>
         </div>
         <div class="action-row" @click="pokePartner">
           <div class="action-left">
             <div class="icon-box"><img class="icon-img" src="/static/icon-poke.png" alt="" /></div>
             <div>
-              <span class="action-code">POKE</span>
-              <span class="action-desc">Signal partner</span>
+              <span class="action-code">戳一戳</span>
+              <span class="action-desc">给 TA 发送一个心动信号</span>
             </div>
           </div>
-          <span class="action-go">SEND</span>
+          <span class="action-go">发送</span>
         </div>
       </div>
 
       <div class="console-table">
         <div class="table-row">
-          <span class="table-label">ANNIVERSARY</span>
+          <span class="table-label">在一起的日子</span>
           <span class="table-value">2026-01-13</span>
         </div>
         <div class="table-row">
-          <span class="table-label">PAIR</span>
+          <span class="table-label">我的伴侣</span>
           <span class="table-value">{{ partnerName }}</span>
         </div>
         <div class="table-row">
-          <span class="table-label">STATE</span>
-          <span class="table-value">DATA SYNC</span>
+          <span class="table-label">状态</span>
+          <span class="table-value">双向奔赴</span>
         </div>
         <div class="table-row">
-          <span class="table-label">POKES</span>
-          <span class="table-value">{{ myPokes }} / {{ partnerPokes }}</span>
+          <span class="table-label">戳一戳</span>
+          <span class="table-value">我 {{ myPokes }} / TA {{ partnerPokes }}</span>
         </div>
       </div>
     </template>
@@ -367,17 +367,10 @@ onUnmounted(() => {
   pointer-events: none;
 }
 .theme-male {
-  background: linear-gradient(180deg, #121212 0%, #0f121a 100%);
+  background: var(--ios-bg);
 }
 .theme-male::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.08) 0, rgba(0, 229, 255, 0.08) 1px, transparent 1px, transparent 26px),
-    repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0, rgba(0, 229, 255, 0.05) 1px, transparent 1px, transparent 26px);
-  opacity: 0.2;
-  pointer-events: none;
+  content: none; /* iOS 风格：无网格装饰线 */
 }
 .mine-page > * { position: relative; z-index: 1; }
 
@@ -502,59 +495,56 @@ onUnmounted(() => {
 
 .footer-text { text-align: center; font-size: 12px; opacity: 0.6; margin: 8px 0 16px; }
 
-/* 男性视角 */
+/* 男性视角（iOS 设置页风） */
 .console-hero {
   margin-bottom: 16px;
   padding: 16px;
-  border-radius: 10px;
-  background: rgba(10, 12, 18, 0.92);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
+  background: var(--ios-surface);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
 }
 .console-left { display: flex; flex-direction: column; gap: 6px; }
-.console-eyebrow { font-size: 10px; letter-spacing: 2px; color: rgba(0, 229, 255, 0.7); }
-.console-title { font-size: 18px; font-weight: 700; color: #e8faff; }
-.console-sub { font-size: 11px; color: rgba(159, 200, 212, 0.8); }
+.console-eyebrow { font-size: 11px; color: var(--ios-text-2); }
+.console-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; color: var(--ios-text); }
+.console-sub { font-size: 12px; color: var(--ios-text-2); }
 .console-right {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(0, 229, 255, 0.08);
+  background: var(--ios-surface-2);
   padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-radius: 12px;
   cursor: pointer;
 }
-.console-avatar { width: 46px; height: 46px; border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.35); object-fit: cover; }
+.console-avatar { width: 46px; height: 46px; border-radius: 12px; object-fit: cover; }
 .console-meta { display: flex; flex-direction: column; gap: 4px; }
-.console-name { font-size: 14px; font-weight: 700; color: #e8faff; }
-.console-role { font-size: 10px; letter-spacing: 1px; color: rgba(0, 229, 255, 0.7); }
+.console-name { font-size: 14px; font-weight: 600; color: var(--ios-text); }
+.console-role { font-size: 11px; color: var(--ios-text-2); }
 .console-switch {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #00e5ff;
-  background: rgba(0, 229, 255, 0.16);
+  color: var(--ios-accent);
+  background: rgba(10, 132, 255, 0.14);
   font-size: 12px;
 }
 
 .console-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
 .console-stats .stat-card {
-  padding: 10px;
-  border-radius: 8px;
-  background: rgba(12, 16, 22, 0.92);
-  border: 1px solid rgba(0, 229, 255, 0.18);
+  padding: 12px 10px;
+  border-radius: var(--ios-radius);
+  background: var(--ios-surface);
   text-align: center;
 }
-.stat-label { display: block; font-size: 10px; letter-spacing: 1px; color: rgba(0, 229, 255, 0.7); }
-.stat-value { display: block; margin-top: 4px; font-size: 16px; font-weight: 700; color: #e8faff; }
+.stat-label { display: block; font-size: 11px; color: var(--ios-text-2); }
+.stat-value { display: block; margin-top: 4px; font-size: 17px; font-weight: 700; color: var(--ios-text); }
 
 .console-actions { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 .action-row {
@@ -562,51 +552,49 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 12px 14px;
-  border-radius: 8px;
-  background: rgba(10, 12, 18, 0.92);
-  border: 1px solid rgba(0, 229, 255, 0.18);
+  border-radius: var(--ios-radius);
+  background: var(--ios-surface);
   cursor: pointer;
 }
+.action-row:active { background: var(--ios-surface-3); }
 .action-left { display: flex; align-items: center; gap: 12px; }
 .icon-box {
   width: 34px;
   height: 34px;
-  border-radius: 6px;
-  background: rgba(0, 229, 255, 0.08);
-  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-radius: 9px;
+  background: rgba(10, 132, 255, 0.14);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .icon-img { width: 20px; height: 20px; }
-.text-icon { color: #00e5ff; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
-.action-code { display: block; font-size: 12px; letter-spacing: 1px; color: #00e5ff; margin-bottom: 4px; }
-.action-desc { display: block; font-size: 12px; color: rgba(159, 200, 212, 0.8); }
+.text-icon { color: var(--ios-accent); font-size: 10px; font-weight: 600; }
+.action-code { display: block; font-size: 12px; color: var(--ios-text-2); margin-bottom: 4px; }
+.action-desc { display: block; font-size: 12px; color: var(--ios-text-2); }
 .action-go {
   font-size: 11px;
-  color: #041018;
-  background: linear-gradient(135deg, #00e5ff 0%, #6a7dff 100%);
-  padding: 6px 10px;
-  border-radius: 6px;
+  color: #ffffff;
+  background: var(--ios-accent);
+  padding: 6px 12px;
+  border-radius: 999px;
 }
 
 .console-table {
-  padding: 14px;
-  border-radius: 8px;
-  background: rgba(9, 12, 18, 0.9);
-  border: 1px solid rgba(0, 229, 255, 0.18);
+  padding: 6px 14px;
+  border-radius: var(--ios-radius);
+  background: var(--ios-surface);
   margin-bottom: 16px;
 }
 .table-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.08);
+  padding: 12px 0;
+  border-bottom: 0.5px solid var(--ios-separator);
 }
 .table-row:last-child { border-bottom: none; }
-.table-label { font-size: 11px; letter-spacing: 1px; color: rgba(0, 229, 255, 0.7); }
-.table-value { font-size: 12px; color: #e8faff; }
+.table-label { font-size: 13px; color: var(--ios-text); }
+.table-value { font-size: 13px; color: var(--ios-text-2); }
 
 /* 戳一戳全屏动效 */
 .poke-overlay {

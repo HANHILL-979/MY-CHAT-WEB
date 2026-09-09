@@ -272,21 +272,21 @@ onMounted(() => {
     <template v-else>
       <div class="console-header">
         <div>
-          <span class="console-eyebrow">DIARY::ARCHIVE</span>
+          <span class="console-eyebrow">心情日历</span>
           <span class="console-title">{{ currentYear }} / {{ String(currentMonth).padStart(2, '0') }}</span>
-          <span class="console-sub">ENTRIES {{ monthCount }}</span>
+          <span class="console-sub">本月 {{ monthCount }} 篇</span>
         </div>
         <div class="console-actions">
-          <div class="console-btn" @click="changeMonth(-1)">PREV</div>
-          <div class="console-btn primary" @click="resetToday">NOW</div>
-          <div class="console-btn" @click="changeMonth(1)">NEXT</div>
+          <div class="console-btn" @click="changeMonth(-1)">上月</div>
+          <div class="console-btn primary" @click="resetToday">今天</div>
+          <div class="console-btn" @click="changeMonth(1)">下月</div>
         </div>
       </div>
     </template>
 
     <!-- 返回按钮 -->
     <div class="back-bar">
-      <span class="back-btn" @click="goBack">{{ theme === 'male' ? '◄ BACK' : '❮ 返回' }}</span>
+      <span class="back-btn" @click="goBack">❮ 返回</span>
     </div>
 
     <!-- 日历卡片 -->
@@ -347,8 +347,8 @@ onMounted(() => {
       <span class="btn-text">记一笔</span>
     </div>
     <div v-else class="floating-btn console-fab" @click="startNewDiary(todayStr)">
-      <span class="pen-icon">＋</span>
-      <span class="btn-text">NEW LOG</span>
+      <span class="pen-icon">✍️</span>
+      <span class="btn-text">记一笔</span>
     </div>
 
     <!-- 弹窗 -->
@@ -434,16 +434,9 @@ onMounted(() => {
   -webkit-overflow-scrolling: touch;
 }
 .theme-female { background: linear-gradient(180deg, #fffdf5 0%, #ffeef3 100%); }
-.theme-male { background: linear-gradient(180deg, #121212 0%, #0d1118 100%); }
+.theme-male { background: var(--ios-bg); }
 .theme-male::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background:
-    repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.08) 0, rgba(0, 229, 255, 0.08) 1px, transparent 1px, transparent 30px),
-    repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0, rgba(0, 229, 255, 0.05) 1px, transparent 1px, transparent 30px);
-  opacity: 0.2;
-  pointer-events: none;
+  content: none; /* iOS 风格：无网格装饰线 */
 }
 .diary-page > * { position: relative; z-index: 1; }
 
@@ -457,21 +450,20 @@ onMounted(() => {
   align-items: center;
   padding: 16px;
   margin-bottom: 14px;
-  border-radius: 12px;
-  background: rgba(10, 12, 18, 0.92);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
+  background: var(--ios-surface);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
 }
-.console-eyebrow { font-size: 10px; letter-spacing: 2px; color: rgba(0, 229, 255, 0.7); display: block; margin-bottom: 6px; }
-.console-title { font-size: 22px; font-weight: 700; color: #e8faff; display: block; }
-.console-sub { font-size: 11px; color: rgba(159, 200, 212, 0.8); }
+.console-eyebrow { font-size: 11px; color: var(--ios-text-2); display: block; margin-bottom: 6px; }
+.console-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--ios-text); display: block; }
+.console-sub { font-size: 12px; color: var(--ios-text-2); }
 .console-actions { display: flex; gap: 8px; }
-.console-btn { padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0, 229, 255, 0.3); color: #00e5ff; font-size: 10px; cursor: pointer; }
-.console-btn.primary { background: linear-gradient(135deg, #00e5ff, #6a7dff); color: #041018; border-color: transparent; }
+.console-btn { padding: 7px 14px; border-radius: 999px; border: 1px solid var(--ios-separator); color: var(--ios-accent); font-size: 12px; background: transparent; cursor: pointer; }
+.console-btn.primary { background: var(--ios-accent); color: #ffffff; border-color: transparent; }
 
 .back-bar { margin-bottom: 10px; }
 .back-btn { font-size: 15px; color: #ff6b81; font-weight: 500; cursor: pointer; }
-.theme-male .back-btn { color: #00e5ff; font-size: 12px; letter-spacing: 1px; }
+.theme-male .back-btn { color: var(--ios-accent); font-size: 14px; }
 
 /* 日历卡片 */
 .calendar-card {
@@ -482,18 +474,17 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 .theme-male .calendar-card {
-  background: rgba(10, 12, 18, 0.92);
-  border-radius: 10px;
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45);
+  background: var(--ios-surface);
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
 }
 
 .calendar-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
 .current-date { display: flex; flex-direction: column; }
 .year-text { font-size: 12px; color: #bbb; font-weight: bold; }
 .month-text { font-size: 24px; color: #333; font-weight: 800; }
-.theme-male .year-text { color: rgba(0, 229, 255, 0.7); }
-.theme-male .month-text { color: #e8faff; }
+.theme-male .year-text { color: var(--ios-text-2); }
+.theme-male .month-text { color: var(--ios-text); }
 
 .btn-group { display: flex; align-items: center; gap: 8px; }
 .arrow-btn {
@@ -521,12 +512,12 @@ onMounted(() => {
   font-weight: bold;
   cursor: pointer;
 }
-.theme-male .arrow-btn { background: rgba(0, 229, 255, 0.08); border-radius: 8px; color: #00e5ff; border: 1px solid rgba(0, 229, 255, 0.25); }
-.theme-male .today-btn { background: linear-gradient(135deg, #00e5ff, #6a7dff); color: #041018; border-radius: 8px; }
+.theme-male .arrow-btn { background: var(--ios-surface-2); border-radius: 999px; color: var(--ios-text-2); border: none; }
+.theme-male .today-btn { background: var(--ios-accent); color: #ffffff; border-radius: 999px; }
 
 .week-header { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 12px; }
 .week-text { text-align: center; font-size: 12px; color: #bbb; font-weight: bold; }
-.theme-male .week-text { color: rgba(0, 229, 255, 0.6); }
+.theme-male .week-text { color: var(--ios-text-2); }
 
 .days-container { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
 .day-cell { height: 46px; display: flex; justify-content: center; align-items: center; }
@@ -542,18 +533,18 @@ onMounted(() => {
   transition: all 0.2s;
   cursor: pointer;
 }
-.theme-male .cell-inner { border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.08); }
+.theme-male .cell-inner { border-radius: 10px; border: none; }
 .today-highlight { background: #e3f2fd; }
 .today-highlight .day-number { color: #2196f3; font-weight: bold; }
-.theme-male .today-highlight { background: rgba(0, 229, 255, 0.12); }
-.theme-male .today-highlight .day-number { color: #00e5ff; }
+.theme-male .today-highlight { background: rgba(10, 132, 255, 0.16); }
+.theme-male .today-highlight .day-number { color: var(--ios-accent); }
 .day-number { font-size: 15px; color: #333; font-weight: 500; }
-.theme-male .day-number { color: #e8faff; }
+.theme-male .day-number { color: var(--ios-text); }
 
 .mood-face-box { display: flex; flex-direction: column; align-items: center; }
 .mood-face { font-size: 24px; line-height: 1; }
 .dot-indicator { width: 4px; height: 4px; background: #ff6b81; border-radius: 50%; margin-top: 3px; }
-.theme-male .dot-indicator { background: #00e5ff; }
+.theme-male .dot-indicator { background: var(--ios-accent); }
 
 /* 悬浮按钮 */
 .floating-btn {
@@ -572,7 +563,7 @@ onMounted(() => {
   cursor: pointer;
 }
 .theme-female .floating-btn { background: linear-gradient(135deg, #ffb7c5, #ffd93d); color: #5a3947; }
-.console-fab { border-radius: 10px; background: linear-gradient(135deg, #00e5ff, #6a7dff); color: #041018; }
+.console-fab { border-radius: 999px; background: var(--ios-accent); color: #ffffff; box-shadow: 0 8px 20px rgba(10, 132, 255, 0.35); }
 .pen-icon { font-size: 18px; }
 .btn-text { font-size: 14px; font-weight: bold; }
 
@@ -590,7 +581,7 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
 }
-.theme-male .mask { background: rgba(3, 6, 10, 0.78); }
+.theme-male .mask { background: rgba(0, 0, 0, 0.6); }
 
 .modal-card {
   width: 88%;
@@ -605,10 +596,9 @@ onMounted(() => {
   animation: popUp 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 .theme-male .modal-card {
-  background: rgba(10, 12, 18, 0.96);
-  border-radius: 10px;
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  background: var(--ios-surface);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 @keyframes popUp {
   from { transform: scale(0.9); opacity: 0; }
@@ -618,8 +608,8 @@ onMounted(() => {
 .modal-title { margin-bottom: 18px; text-align: center; }
 .modal-title span:first-child { font-size: 18px; font-weight: bold; color: #333; display: block; }
 .modal-date { font-size: 12px; color: #999; margin-top: 5px; display: block; }
-.theme-male .modal-title span:first-child { color: #e8faff; }
-.theme-male .modal-date { color: rgba(159, 200, 212, 0.8); }
+.theme-male .modal-title span:first-child { color: var(--ios-text); }
+.theme-male .modal-date { color: var(--ios-text-2); }
 
 .mood-scroll { white-space: nowrap; width: 100%; margin-bottom: 18px; overflow-x: auto; }
 .mood-row { display: flex; gap: 10px; padding: 3px; }
@@ -636,11 +626,11 @@ onMounted(() => {
   flex-shrink: 0;
 }
 .mood-active { background: #fff0f5; border-color: #ff6b81; transform: scale(1.05); }
-.theme-male .mood-chip { background: rgba(0, 229, 255, 0.08); border-radius: 8px; border: 1px solid rgba(0, 229, 255, 0.2); }
-.theme-male .mood-active { background: rgba(0, 229, 255, 0.2); border-color: #00e5ff; }
+.theme-male .mood-chip { background: var(--ios-fill); border-radius: 999px; border: 2px solid transparent; }
+.theme-male .mood-active { background: rgba(10, 132, 255, 0.24); border-color: var(--ios-accent); }
 .chip-emoji { font-size: 18px; }
 .chip-txt { font-size: 12px; color: #666; }
-.theme-male .chip-txt { color: #cfe9f3; }
+.theme-male .chip-txt { color: var(--ios-text); }
 
 .text-input {
   width: 100%;
@@ -657,12 +647,12 @@ onMounted(() => {
   font-family: inherit;
   resize: none;
 }
-.theme-male .text-input { background: rgba(0, 229, 255, 0.08); border-radius: 8px; color: #e8faff; border: 1px solid rgba(0, 229, 255, 0.2); }
+.theme-male .text-input { background: var(--ios-fill); border-radius: 12px; color: var(--ios-text); border: none; }
 
 .media-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
 .media-item { position: relative; width: 60px; height: 60px; }
 .media-img { width: 100%; height: 100%; border-radius: 10px; object-fit: cover; cursor: pointer; }
-.theme-male .media-img { border-radius: 6px; }
+.theme-male .media-img { border-radius: 10px; }
 .close-badge {
   position: absolute;
   top: -5px;
@@ -688,9 +678,9 @@ onMounted(() => {
   align-items: center;
   cursor: pointer;
 }
-.theme-male .media-add { border-radius: 6px; border-color: rgba(0, 229, 255, 0.35); }
+.theme-male .media-add { border-radius: 12px; border-color: var(--ios-text-3); }
 .add-icon { font-size: 26px; color: #ccc; }
-.theme-male .add-icon { color: rgba(0, 229, 255, 0.6); }
+.theme-male .add-icon { color: var(--ios-text-2); }
 
 .submit-btn {
   border: none;
@@ -702,7 +692,7 @@ onMounted(() => {
   font-family: inherit;
 }
 .theme-female .submit-btn { background: linear-gradient(135deg, #ffb7c5, #ffd93d); color: #5a3947; }
-.theme-male .submit-btn { background: linear-gradient(135deg, #00e5ff, #6a7dff); color: #041018; border-radius: 8px; }
+.theme-male .submit-btn { background: var(--ios-accent); color: #ffffff; border-radius: 999px; }
 
 /* 查看模式 */
 .view-header {
@@ -712,21 +702,21 @@ onMounted(() => {
   border-bottom: 2px solid #eee;
   margin-bottom: 16px;
 }
-.theme-male .view-header { border-bottom-color: rgba(0, 229, 255, 0.2); }
+.theme-male .view-header { border-bottom: 0.5px solid var(--ios-separator); }
 .view-mood-icon { font-size: 40px; margin-right: 12px; }
 .view-meta { flex: 1; }
 .view-date { font-size: 18px; font-weight: bold; color: #333; display: block; }
 .view-label { font-size: 12px; color: #ff6b81; background: #fff0f5; padding: 2px 8px; border-radius: 8px; display: inline-block; margin-top: 4px; }
 .edit-link { font-size: 13px; color: #999; padding: 6px; cursor: pointer; }
-.theme-male .view-date { color: #e8faff; }
-.theme-male .view-label { color: #00e5ff; background: rgba(0, 229, 255, 0.12); border-radius: 6px; }
-.theme-male .edit-link { color: rgba(0, 229, 255, 0.7); }
+.theme-male .view-date { color: var(--ios-text); }
+.theme-male .view-label { color: var(--ios-accent); background: rgba(10, 132, 255, 0.14); border-radius: 999px; }
+.theme-male .edit-link { color: var(--ios-accent); }
 
 .view-scroll { max-height: 50vh; }
 .view-content { font-size: 15px; color: #444; line-height: 1.8; display: block; margin-bottom: 16px; white-space: pre-wrap; }
 .view-img-item { width: 100%; border-radius: 14px; margin-bottom: 12px; }
-.theme-male .view-content { color: #cfe9f3; }
-.theme-male .view-img-item { border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.15); }
+.theme-male .view-content { color: var(--ios-text); }
+.theme-male .view-img-item { border-radius: 12px; border: none; }
 
 /* 数据库未就绪提示 */
 .missing-tip {
@@ -739,7 +729,7 @@ onMounted(() => {
   border: 1px solid rgba(255, 180, 84, 0.4);
   color: #b8860b;
 }
-.theme-male .missing-tip { background: rgba(255, 180, 84, 0.1); color: #ffca7a; }
+.theme-male .missing-tip { background: rgba(255, 159, 10, 0.12); border-color: rgba(255, 159, 10, 0.35); color: var(--ios-orange); }
 
 .scroll-area-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 </style>

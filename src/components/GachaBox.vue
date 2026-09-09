@@ -76,14 +76,14 @@ function goBack() {
     </template>
     <template v-else>
       <div class="nav-bar console-bar">
-        <span class="back-btn" @click="goBack">◄ BACK</span>
-        <span class="title">MYSTERYBOX</span>
-        <span class="placeholder">LIVE</span>
+        <span class="back-btn" @click="goBack">❮ 返回</span>
+        <span class="title">心动盲盒 🎁</span>
+        <span class="placeholder"></span>
       </div>
     </template>
 
     <div class="gacha-stage">
-      <div class="tips">{{ theme === 'male' ? 'RUN PROTOCOL / RANDOM TASK' : '不知道今天干嘛？抽个盲盒吧！' }}</div>
+      <div class="tips">不知道今天干嘛？抽个盲盒吧！</div>
 
       <div class="box-container" :class="{ shaking: isShaking }" @click="startDraw">
         <div class="magic-box">
@@ -97,7 +97,7 @@ function goBack() {
         :class="{ 'btn-disabled': isShaking, 'console-btn': theme === 'male' }"
         @click="startDraw"
       >
-        {{ isShaking ? (theme === 'male' ? 'OPENING...' : '正在开启...') : theme === 'male' ? 'OPEN PROTOCOL' : '🔮 开启今日惊喜' }}
+        {{ isShaking ? '正在开启...' : '🔮 开启今日惊喜' }}
       </button>
     </div>
 
@@ -144,18 +144,11 @@ function goBack() {
   color: #4b3046;
 }
 .theme-male {
-  background: linear-gradient(180deg, #121212 0%, #0d1118 100%);
-  color: #e8faff;
+  background: var(--ios-bg);
+  color: var(--ios-text);
 }
 .theme-male::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.08) 0, rgba(0, 229, 255, 0.08) 1px, transparent 1px, transparent 30px),
-    repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.05) 0, rgba(0, 229, 255, 0.05) 1px, transparent 1px, transparent 30px);
-  opacity: 0.18;
-  pointer-events: none;
+  content: none; /* iOS 风格：无网格装饰线 */
 }
 .gacha-page > * { position: relative; z-index: 1; }
 
@@ -170,9 +163,9 @@ function goBack() {
 .back-btn { font-size: 16px; color: #ff6b81; font-weight: 500; width: 60px; cursor: pointer; }
 .title { font-size: 18px; font-weight: bold; color: #4b3046; }
 .placeholder { width: 60px; text-align: right; }
-.console-bar .back-btn { color: #00e5ff; font-size: 12px; letter-spacing: 1px; }
-.console-bar .title { color: #e8faff; letter-spacing: 1px; }
-.console-bar .placeholder { color: rgba(0, 229, 255, 0.7); font-size: 10px; letter-spacing: 1px; }
+.console-bar .back-btn { color: var(--ios-accent); font-size: 14px; }
+.console-bar .title { color: var(--ios-text); }
+.console-bar .placeholder { color: var(--ios-text-2); font-size: 12px; }
 
 /* 盲盒舞台区 */
 .gacha-stage {
@@ -184,7 +177,7 @@ function goBack() {
   padding-bottom: 10vh;
 }
 .tips { font-size: 16px; color: #8a7da6; margin-bottom: 40px; letter-spacing: 1px; }
-.theme-male .tips { color: rgba(0, 229, 255, 0.7); }
+.theme-male .tips { color: var(--ios-text-2); }
 
 .box-container { position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
 
@@ -202,10 +195,10 @@ function goBack() {
   z-index: 2;
 }
 .theme-male .magic-box {
-  background: rgba(10, 12, 18, 0.96);
-  border-radius: 10px;
-  border: 2px solid rgba(0, 229, 255, 0.4);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  background: var(--ios-surface);
+  border-radius: 32px;
+  border: none;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 .box-emoji { font-size: 80px; }
 
@@ -217,7 +210,7 @@ function goBack() {
   margin-top: 20px;
   animation: shadowFloat 3s ease-in-out infinite;
 }
-.theme-male .box-shadow { background: rgba(0, 229, 255, 0.15); border-radius: 6px; }
+.theme-male .box-shadow { background: rgba(120, 120, 128, 0.35); border-radius: 50%; }
 
 /* 平时悬浮动画 */
 @keyframes float {
@@ -266,11 +259,10 @@ function goBack() {
   font-family: inherit;
 }
 .console-btn.draw-btn {
-  background: linear-gradient(135deg, #00e5ff 0%, #6a7dff 100%);
-  color: #041018;
-  border-radius: 8px;
-  box-shadow: 0 8px 20px rgba(0, 229, 255, 0.35);
-  letter-spacing: 1px;
+  background: var(--ios-accent);
+  color: #ffffff;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(10, 132, 255, 0.35);
 }
 .draw-btn:active { transform: scale(0.95); }
 .btn-disabled { background: #ccc; box-shadow: none; pointer-events: none; }
@@ -310,9 +302,9 @@ function goBack() {
   padding-bottom: 25px;
 }
 .console-card {
-  background: rgba(10, 12, 18, 0.96);
-  border-radius: 10px;
-  border: 1px solid rgba(0, 229, 255, 0.25);
+  background: var(--ios-surface);
+  border-radius: 16px;
+  border: none;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 @keyframes popUp {
@@ -330,7 +322,7 @@ function goBack() {
   background: #fffafb;
   overflow: hidden;
 }
-.console-card .card-header { background: rgba(0, 229, 255, 0.08); }
+.console-card .card-header { background: var(--ios-surface-2); }
 .glow-bg {
   position: absolute;
   width: 150px;
@@ -358,8 +350,8 @@ function goBack() {
 .prize-type { font-size: 14px; font-weight: 800; margin-bottom: 12px; letter-spacing: 1px; }
 .prize-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; }
 .prize-desc { font-size: 14px; color: #666; line-height: 1.6; }
-.console-card .prize-title { color: #e8faff; }
-.console-card .prize-desc { color: rgba(159, 200, 212, 0.8); }
+.console-card .prize-title { color: var(--ios-text); }
+.console-card .prize-desc { color: var(--ios-text-2); }
 
 .accept-btn {
   margin-top: 10px;
@@ -374,7 +366,7 @@ function goBack() {
   cursor: pointer;
   font-family: inherit;
 }
-.console-btn.accept-btn { background: linear-gradient(135deg, #00e5ff 0%, #6a7dff 100%); color: #041018; border-radius: 8px; }
+.console-btn.accept-btn { background: var(--ios-accent); color: #ffffff; border-radius: 999px; }
 
 /* 满屏撒花特效 */
 .confetti-box { position: absolute; width: 100%; height: 100%; pointer-events: none; overflow: hidden; top: 0; left: 0; }

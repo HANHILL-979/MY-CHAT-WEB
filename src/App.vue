@@ -199,6 +199,9 @@ onUnmounted(() => {
   position: relative;
   background: #0f0f18;
 }
+.app-shell.theme-male {
+  background: var(--ios-bg); /* iOS 系统背景：真黑 */
+}
 
 /* ============ 首页（Linda1 index.vue 复刻） ============ */
 .home-overlay {
@@ -210,7 +213,7 @@ onUnmounted(() => {
   background: linear-gradient(180deg, #fffdf5 0%, #ffe9ef 100%);
 }
 .home-overlay.theme-male {
-  background: linear-gradient(180deg, #121212 0%, #1b1d2a 100%);
+  background: var(--ios-bg);
 }
 
 .orb {
@@ -239,10 +242,10 @@ onUnmounted(() => {
   background: rgba(255, 217, 61, 0.28);
 }
 .theme-male .orb-one {
-  background: rgba(0, 229, 255, 0.25);
+  background: rgba(10, 132, 255, 0.16);
 }
 .theme-male .orb-two {
-  background: rgba(106, 125, 255, 0.22);
+  background: rgba(120, 120, 128, 0.14);
 }
 
 .hero {
@@ -287,7 +290,8 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.76);
 }
 .theme-male .mode-card {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--ios-surface);
+  border-radius: 16px;
 }
 .mode-card.active {
   border-color: currentColor;
@@ -323,8 +327,11 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.84);
 }
 .theme-male .entry-item {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(0, 229, 255, 0.12);
+  background: var(--ios-surface);
+  border-radius: 16px;
+}
+.theme-male .entry-item:active {
+  background: var(--ios-surface-3);
 }
 
 /* ============ 主内容区 ============ */
@@ -340,13 +347,16 @@ onUnmounted(() => {
   background: #ffffff;
 }
 .theme-male .app-tabbar {
-  background: #0d1118;
+  background: rgba(28, 28, 30, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 0.5px solid var(--ios-separator);
 }
 .theme-male .app-tabbar :deep(.van-tabbar-item) {
-  color: rgba(159, 200, 212, 0.8);
+  color: var(--ios-text-2);
 }
 .theme-male .app-tabbar :deep(.van-tabbar-item--active) {
-  color: #00e5ff;
+  color: var(--ios-accent);
 }
 .tab-icon {
   font-size: 20px;
