@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import { showToast } from 'vant'
 import { supabase } from './supabase'
 import { identity, identityProfiles, identityNames } from './identity'
@@ -12,10 +12,13 @@ import RecordList from './components/RecordList.vue'
 import GachaBox from './components/GachaBox.vue'
 import QuizGame from './components/QuizGame.vue'
 
+// 情绪星云依赖 three.js（约 600KB），按需异步加载，避免拖慢首屏
+const EmotionNebula = defineAsyncComponent(() => import('./components/EmotionNebula.vue'))
+
 // ---- 全局状态 ----
 const activeTab = ref(0) // 0 朋友圈 / 1 秘密基地 / 2 我的
 const showHome = ref(false) // 不再默认显示入口首页，启动直接进朋友圈 Tab
-const activePage = ref(null) // 子页：diary / record / gacha / quiz
+const activePage = ref(null) // 子页：diary / record / gacha / quiz / nebula
 const showSwitch = ref(false)
 const chatUnread = ref(0)
 
@@ -41,6 +44,7 @@ const homeEntries = [
   { label: '恋爱清单', type: 'page', value: 'record' },
   { label: '心情日历', type: 'page', value: 'diary' },
   { label: '心动盲盒', type: 'page', value: 'gacha' },
+  { label: '情绪星云', type: 'page', value: 'nebula' },
 ]
 
 function homeGo(entry) {
@@ -163,7 +167,7 @@ onUnmounted(() => {
       </van-tabbar>
     </template>
 
-    <!-- 子页：心情日历 / 恋爱清单 / 心动盲盒 / 默契挑战 -->
+    <!-- 子页：心情日历 / 恋爱清单 / 心动盲盒 / 默契挑战 / 情绪星云 -->
     <transition name="page-up">
       <DiaryPage v-if="activePage === 'diary'" @close="closePage" />
     </transition>
@@ -175,6 +179,9 @@ onUnmounted(() => {
     </transition>
     <transition name="page-up">
       <QuizGame v-if="activePage === 'quiz'" @close="closePage" />
+    </transition>
+    <transition name="page-up">
+      <EmotionNebula v-if="activePage === 'nebula'" @close="closePage" />
     </transition>
 
     <!-- 身份切换弹窗（主题跟随身份联动） -->

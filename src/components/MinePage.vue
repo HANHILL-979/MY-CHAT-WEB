@@ -179,6 +179,11 @@ onUnmounted(() => {
           <span class="card-title">默契挑战</span>
           <span class="card-desc">测一测同步率</span>
         </div>
+        <div class="action-card nebula-card" @click="goPage('nebula')">
+          <div class="card-icon">🌌</div>
+          <span class="card-title">情绪星云</span>
+          <span class="card-desc">捏卡片读情话</span>
+        </div>
         <div class="action-card poke-card" @click="pokePartner">
           <div class="card-icon">💌</div>
           <span class="card-title">戳一戳</span>
@@ -279,6 +284,16 @@ onUnmounted(() => {
             <div>
               <span class="action-code">默契挑战</span>
               <span class="action-desc">测测你们有多同步</span>
+            </div>
+          </div>
+          <span class="action-go">打开</span>
+        </div>
+        <div class="action-row" @click="goPage('nebula')">
+          <div class="action-left">
+            <div class="icon-box text-icon">星云</div>
+            <div>
+              <span class="action-code">情绪星云</span>
+              <span class="action-desc">开摄像头用手掌捏卡片</span>
             </div>
           </div>
           <span class="action-go">打开</span>
@@ -474,6 +489,7 @@ onUnmounted(() => {
 .record-card .card-icon { background: linear-gradient(135deg, rgba(255, 217, 61, 0.35), rgba(255, 255, 255, 0.8)); }
 .gacha-card .card-icon { background: linear-gradient(135deg, rgba(255, 154, 158, 0.32), rgba(255, 255, 255, 0.8)); }
 .quiz-card .card-icon { background: linear-gradient(135deg, rgba(143, 211, 244, 0.32), rgba(255, 255, 255, 0.8)); }
+.nebula-card .card-icon { background: linear-gradient(135deg, rgba(161, 140, 209, 0.38), rgba(48, 43, 99, 0.5)); }
 .poke-card .card-icon { background: linear-gradient(135deg, rgba(255, 183, 197, 0.3), rgba(255, 217, 61, 0.2)); }
 .card-title { display: block; font-size: 15px; font-weight: 800; margin-bottom: 4px; color: #4b3046; }
 .card-desc { display: block; font-size: 11px; opacity: 0.7; color: #4b3046; }
