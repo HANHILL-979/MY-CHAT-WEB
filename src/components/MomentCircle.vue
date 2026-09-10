@@ -29,35 +29,14 @@ const themeClass = computed(() => (theme.value === 'male' ? 'theme-male' : 'them
 const myName = computed(() => displayName.value)
 const myAvatar = computed(() => identityProfiles[identity.value].img)
 
-// 内置示例动态（复刻 Linda1 staticList，头像/示例图随静态资源）
+// 内置示例动态（仅保留生日合照一张）
 const staticList = [
   {
-    userName: '小椰宝',
-    userAvatar: '/static/photo1.jpg',
-    content: '这是第一条朋友圈，小椰宝和大椰树在一起啦！',
-    image: '/static/photo5.jpg',
+    userName: '大椰树',
+    userAvatar: '/static/photo8.jpg',
+    content: "what a glorious day,it's futuristic  glimpse,Happy Birthday!!!",
+    image: '/static/photo-birthday.jpg',
     create_time: new Date('2025/11/25 10:00:00').getTime(),
-  },
-  {
-    userName: '小椰宝',
-    userAvatar: '/static/photo1.jpg',
-    content: 'hello 大家好，这是我们',
-    image: '/static/photo3.jpg',
-    create_time: new Date('2025/11/25 10:05:00').getTime(),
-  },
-  {
-    userName: '大椰树',
-    userAvatar: '/static/photo8.jpg',
-    content: '今天也是超级开心的一天 ✨',
-    image: '/static/photo2.jpg',
-    create_time: new Date('2025/11/25 11:00:00').getTime(),
-  },
-  {
-    userName: '大椰树',
-    userAvatar: '/static/photo8.jpg',
-    content: '我们要一直一直走下去 ❤️',
-    image: '/static/photo4.jpg',
-    create_time: new Date('2025/11/25 12:00:00').getTime(),
   },
 ]
 
