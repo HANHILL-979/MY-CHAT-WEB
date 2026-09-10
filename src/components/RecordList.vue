@@ -164,9 +164,12 @@ onMounted(() => {
     <!-- 女性视角 -->
     <template v-if="theme !== 'male'">
       <div class="header-card">
-        <div class="progress-info">
-          <span class="p-title">我们一起完成的小事</span>
-          <span class="p-num"><span class="highlight">{{ doneCount }}</span> / 100</span>
+        <div class="header-top">
+          <div class="progress-info">
+            <span class="p-title">我们一起完成的小事</span>
+            <span class="p-num"><span class="highlight">{{ doneCount }}</span> / 100</span>
+          </div>
+          <span class="back-x" @click="goBack">✕</span>
         </div>
         <div class="progress-bar">
           <div class="progress-inner" :style="{ width: doneCount + '%' }"></div>
@@ -197,6 +200,7 @@ onMounted(() => {
           <span class="male-eyebrow">我们的 100 件小事</span>
           <span class="male-title">恋爱清单</span>
         </div>
+        <span class="male-back-x" @click="goBack">✕</span>
         <div class="male-count">
           <span class="male-count-num">{{ doneCount }}</span>
           <span class="male-count-total">/100</span>
@@ -311,7 +315,22 @@ onMounted(() => {
   box-shadow: 0 8px 20px rgba(255, 183, 197, 0.2);
   margin-bottom: 20px;
 }
-.progress-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.back-x {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  border-radius: 999px;
+  background: rgba(255, 183, 197, 0.2);
+  color: #ff6b81;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.back-x:active { background: rgba(255, 183, 197, 0.4); }
+.progress-info { display: flex; justify-content: space-between; align-items: center; flex: 1; min-width: 0; }
 .p-title { font-size: 18px; font-weight: bold; color: #4b3046; }
 .p-num { font-size: 16px; color: #8a7da6; }
 .highlight { color: #ff8ab2; font-size: 24px; font-weight: bold; }
@@ -355,13 +374,31 @@ onMounted(() => {
 
 /* 男性视角（iOS 分组列表风） */
 .male-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
   background: var(--ios-surface);
   border-radius: 16px;
   padding: 16px;
   margin-bottom: 16px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
 }
-.male-title-group { display: flex; flex-direction: column; gap: 6px; }
+.male-back-x {
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  border-radius: 999px;
+  background: rgba(10, 132, 255, 0.14);
+  color: var(--ios-accent);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.male-back-x:active { background: rgba(10, 132, 255, 0.28); }
+.male-title-group { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .male-eyebrow { font-size: 12px; color: var(--ios-text-2); }
 .male-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--ios-text); }
 .male-count { margin-top: 8px; display: flex; align-items: baseline; gap: 4px; }

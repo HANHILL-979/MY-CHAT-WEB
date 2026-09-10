@@ -11,6 +11,25 @@ const props = defineProps({
   active: { type: Boolean, default: true },
 })
 
+// ---- 音效：Web Audio API 合成 ----
+let audioCtx = null
+function playClickSound() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+    osc.connect(gain)
+    gain.connect(audioCtx.destination)
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime)
+    gain.gain.setValueAtTime(0.08, audioCtx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1)
+    osc.start()
+    osc.stop(audioCtx.currentTime + 0.1)
+  } catch (e) { /* 静默 */ }
+}
+
 const cloudList = ref([])
 const showPublishModal = ref(false)
 const newContent = ref('')
@@ -74,9 +93,13 @@ function normalizeMoment(item = {}) {
 }
 
 // ---- 本地缓存 ----
+const LAST_SYNC_KEY = 'moments_last_sync'
+let lastSyncTime = 0
+
 function saveToLocal() {
   try {
     localStorage.setItem('moments_cache', JSON.stringify(cloudList.value.slice(0, 50)))
+    localStorage.setItem(LAST_SYNC_KEY, String(lastSyncTime))
   } catch (e) {
     console.warn('save cache failed', e)
   }
@@ -87,21 +110,23 @@ function loadFromLocal() {
     if (Array.isArray(local) && local.length > 0) {
       cloudList.value = local.map(normalizeMoment).sort((a, b) => b.create_time - a.create_time)
     }
+    lastSyncTime = Number(localStorage.getItem(LAST_SYNC_KEY) || 0)
   } catch (e) {
     /* 忽略损坏缓存 */
   }
 }
 
-// ---- 云端拉取（60 秒轮询 + Map 去重合并） ----
+// ---- 云端拉取（增量：首次全量，后续只拉新增） ----
 async function getCloudMoments() {
   try {
-    const { data, error } = await supabase
-      .from('moments')
-      .select('*')
-      .order('create_time', { ascending: false })
-      .limit(20)
+    let query = supabase.from('moments').select('*').order('create_time', { ascending: false })
+    if (lastSyncTime > 0) {
+      query = query.gt('create_time', lastSyncTime)
+    } else {
+      query = query.limit(20)
+    }
+    const { data, error } = await query
     if (error) {
-      // 表未创建：标记提示，不崩页面
       if (error.code === '42P01' || error.message?.includes('42P01') || error.details?.includes('missing')) {
         tableMissing.value = true
       }
@@ -109,13 +134,17 @@ async function getCloudMoments() {
     }
     tableMissing.value = false
     const newFetchedList = data || []
-    const merged = new Map()
-    ;[...cloudList.value, ...newFetchedList].forEach((item) => {
-      const key = item._id || item.id || `${item.sender || ''}_${item.create_time || ''}`
-      merged.set(key, normalizeMoment(item))
-    })
-    cloudList.value = Array.from(merged.values()).sort((a, b) => b.create_time - a.create_time)
-    saveToLocal()
+    if (newFetchedList.length > 0) {
+      const merged = new Map()
+      ;[...cloudList.value, ...newFetchedList].forEach((item) => {
+        const key = item._id || item.id || `${item.sender || ''}_${item.create_time || ''}`
+        merged.set(key, normalizeMoment(item))
+      })
+      cloudList.value = Array.from(merged.values()).sort((a, b) => b.create_time - a.create_time)
+      const maxTs = Math.max(...newFetchedList.map((i) => i.create_time || 0))
+      if (maxTs > lastSyncTime) lastSyncTime = maxTs
+      saveToLocal()
+    }
   } catch (e) {
     console.error('getCloudMoments error', e)
   }
@@ -153,6 +182,7 @@ function findCloudItem(id) {
 
 // ---- 点赞（500ms 防抖 + 乐观更新 + 失败回滚） ----
 async function toggleLike(item) {
+  playClickSound()
   if (!item || !item._id) return
   const key = `like_${item._id}`
   if (likeDebounce[key]) return
@@ -206,6 +236,7 @@ function showCommentInput(item) {
 }
 
 async function submitComment() {
+  playClickSound()
   const content = commentText.value.trim()
   if (!content || !commentTarget.value) return
   showToast({ message: '提交中', duration: 0, forbidClick: true })
@@ -280,6 +311,7 @@ async function submitPost() {
     showToast('请输入内容或图片')
     return
   }
+  playClickSound()
   isPosting.value = true
   showToast({ message: '发布中...', duration: 0, forbidClick: true })
   try {
