@@ -1,6 +1,6 @@
 {
-  "name": "专属空间",
-  "short_name": "专属空间",
+  "name": "apple树",
+  "short_name": "apple树",
   "description": "双人私密空间：实时私聊 + 心情日记",
   "start_url": "/",
   "display": "standalone",
@@ -9,15 +9,15 @@
   "theme_color": "#2563eb",
   "icons": [
     {
-      "src": "/icon.png",
+      "src": "/apple-icon.svg",
       "sizes": "1024x1024",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/icon.png",
+      "src": "/apple-icon.svg",
       "sizes": "1024x1024",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable"
     }
   ]
