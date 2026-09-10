@@ -24,7 +24,7 @@ const myAvatar = computed(() => identityProfiles[identity.value].img)
 const partnerName = computed(() => (identity.value === 'user_a' ? '小椰宝' : '大椰树'))
 const roleLabel = computed(() => (identity.value === 'user_a' ? '女主角' : '男主角'))
 const roleDesc = computed(() =>
-  theme.value === 'male' ? '深邃、精密、秩序感' : '柔和、陪伴、治愈感'
+  theme.value === 'male' ? '天才、聪明、太聪明' : '猪头、王树、陪伴'
 )
 // 我的/TA 的戳一戳次数展示
 const myPokes = computed(() => (identity.value === 'user_a' ? pokeCountA.value : pokeCountB.value))
@@ -147,7 +147,7 @@ onUnmounted(() => {
             <span class="profile-role">{{ roleLabel }}</span>
             <span class="profile-desc">{{ roleDesc }}</span>
             <div class="badge-row">
-              <span class="badge-pill">甜度 {{ progress }}%</span>
+              <span class="badge-pill">树度 {{ progress }}%</span>
               <span class="badge-pill soft">温柔进行中</span>
             </div>
           </div>
@@ -166,7 +166,7 @@ onUnmounted(() => {
         </div>
         <div class="action-card record-card" @click="goPage('record')">
           <div class="card-icon">✅</div>
-          <span class="card-title">恋爱清单</span>
+          <span class="card-title">清单</span>
           <span class="card-desc">100件小事</span>
         </div>
         <div class="action-card gacha-card" @click="goPage('gacha')">
@@ -192,17 +192,17 @@ onUnmounted(() => {
       </div>
 
       <div class="menu-group">
-        <div class="menu-title">我们的专属密码</div>
+        <div class="menu-title">猪的专属</div>
         <div class="menu-item">
-          <span class="label">相爱纪念日</span>
-          <span class="value">2025-12-26</span>
+          <span class="label">猪之蛋日</span>
+          <span class="value">2006-09-28</span>
         </div>
         <div class="menu-item">
-          <span class="label">心尖上的人</span>
+          <span class="label">enchanted</span>
           <span class="value">{{ partnerName }}</span>
         </div>
         <div class="menu-item">
-          <span class="label">恋爱状态</span>
+          <span class="label">猪的状态</span>
           <span class="value">{{ theme === 'male' ? '数据同步中' : '温柔进行中' }}</span>
         </div>
         <div class="menu-item">
@@ -262,7 +262,7 @@ onUnmounted(() => {
           <div class="action-left">
             <div class="icon-box"><img class="icon-img" src="/static/icon-task.png" alt="" /></div>
             <div>
-              <span class="action-code">恋爱清单</span>
+              <span class="action-code">清单</span>
               <span class="action-desc">我们的 100 件小事</span>
             </div>
           </div>
@@ -312,16 +312,16 @@ onUnmounted(() => {
 
       <div class="console-table">
         <div class="table-row">
-          <span class="table-label">在一起的日子</span>
-          <span class="table-value">2026-01-13</span>
+          <span class="table-label">谢谢</span>
+          <span class="table-value">2005-02-08</span>
         </div>
         <div class="table-row">
-          <span class="table-label">我的伴侣</span>
+          <span class="table-label">我的pet</span>
           <span class="table-value">{{ partnerName }}</span>
         </div>
         <div class="table-row">
           <span class="table-label">状态</span>
-          <span class="table-value">双向奔赴</span>
+          <span class="table-value">开心</span>
         </div>
         <div class="table-row">
           <span class="table-label">戳一戳</span>
