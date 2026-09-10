@@ -847,13 +847,13 @@ onUnmounted(() => {
 .action-area { position: relative; display: flex; align-items: center; margin-left: auto; }
 .theme-female .action-btn {
   background: rgba(123, 92, 221, 0.12);
-  padding: 0 10px;
+  padding: 0 8px;
   border-radius: 999px;
   color: #7b5cdd;
   font-weight: 700;
-  font-size: 18px;
-  line-height: 24px;
-  height: 24px;
+  font-size: 14px;
+  line-height: 22px;
+  height: 22px;
   cursor: pointer;
 }
 .dots { position: relative; top: -1px; }
@@ -934,13 +934,13 @@ onUnmounted(() => {
 .theme-male .item-footer { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
 .theme-male .action-btn {
   background: transparent;
-  padding: 0 10px;
+  padding: 0 8px;
   border-radius: 999px;
   color: var(--ios-text-2);
   font-weight: 600;
-  font-size: 18px;
-  line-height: 26px;
-  height: 26px;
+  font-size: 14px;
+  line-height: 22px;
+  height: 22px;
   cursor: pointer;
 }
 .theme-male .pop-menu { background: var(--ios-surface-2); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5); }
