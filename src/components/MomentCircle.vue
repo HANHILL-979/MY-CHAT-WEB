@@ -763,12 +763,11 @@ onUnmounted(() => {
   width: 100px;
   padding: 12px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
   text-align: center;
-  flex-shrink: 0;
 }
 .theme-female .hero-name { display: block; color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 10px; }
 .theme-female .hero-avatar { width: 76px; height: 76px; border-radius: 22px; border: 2px solid rgba(255, 255, 255, 0.65); object-fit: cover; }
@@ -789,7 +788,7 @@ onUnmounted(() => {
   justify-content: space-between;
   padding: 14px 16px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   box-shadow: 0 10px 28px rgba(129, 100, 160, 0.08);
@@ -797,8 +796,8 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 .theme-female .summary-item { flex: 1; text-align: center; }
-.theme-female .summary-value { display: block; font-size: 18px; font-weight: 800; color: #2f2545; }
-.theme-female .summary-label { display: block; margin-top: 4px; font-size: 11px; color: #8a7da6; }
+.theme-female .summary-value { display: block; font-size: 18px; font-weight: 800; color: #fff; }
+.theme-female .summary-label { display: block; margin-top: 4px; font-size: 11px; color: rgba(255, 255, 255, 0.7); }
 .theme-female .summary-divider { width: 1px; align-self: stretch; background: rgba(138, 125, 166, 0.14); }
 
 /* 男性视角 hero（iOS 大标题风） */

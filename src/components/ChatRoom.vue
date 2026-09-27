@@ -30,13 +30,9 @@ let saveTimer = null
 
 const themeClass = computed(() => (theme.value === 'male' ? 'theme-male' : 'theme-female'))
 
-// 壁纸背景（男性主题无壁纸时透明，透出全局日落实景）
+// 壁纸背景（男性主题无壁纸时透明，透出全局日落实景；女性主题也透明透背景图）
 const backgroundStyle = computed(() => {
-  const fallback =
-    theme.value === 'male'
-      ? 'none'
-      : 'linear-gradient(160deg, #fffdf5 0%, #ffe7ef 50%, #fff3d9 100%)'
-  return { backgroundImage: chatBg.value ? `url(${chatBg.value})` : fallback }
+  return { backgroundImage: chatBg.value ? `url(${chatBg.value})` : 'none' }
 })
 
 function isSelf(msg) {
@@ -561,7 +557,7 @@ onUnmounted(() => {
   backdrop-filter: blur(14px);
   cursor: pointer;
 }
-.theme-female .top-chip { background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 183, 197, 0.28); color: #7a5564; }
+.theme-female .top-chip { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; }
 .theme-male .top-chip { background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.85); border-radius: 999px; }
 
 /* 消息列表 */
@@ -619,10 +615,13 @@ onUnmounted(() => {
 }
 .bubble-text { display: block; white-space: pre-wrap; }
 .bubble-time { display: block; margin-top: 8px; font-size: 10px; opacity: 0.7; text-align: right; }
-.theme-female .left-bubble { background: rgba(255, 255, 255, 0.9); color: #3a2c3f; border-radius: 20px 20px 20px 8px; }
+.theme-female .left-bubble { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); border: 1px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.9); border-radius: 20px 20px 20px 8px; }
 .theme-female .right-bubble {
-  background: linear-gradient(135deg, rgba(255, 183, 197, 0.95) 0%, rgba(255, 217, 61, 0.95) 100%);
-  color: #5a3947;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
   border-radius: 20px 20px 8px 20px;
 }
 .theme-male .left-bubble { background: rgba(255, 255, 255, 0.16); color: #ffffff; border-radius: 20px 20px 20px 6px; border: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
