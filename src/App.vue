@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
+import { ref, computed, onMounted, onUnmounted, defineAsyncComponent, watch } from 'vue'
 import { showToast } from 'vant'
 import { supabase } from './supabase'
 import { identity, identityProfiles, identityNames } from './identity'
@@ -14,6 +14,19 @@ import QuizGame from './components/QuizGame.vue'
 
 // 情绪星云依赖 three.js（约 600KB），按需异步加载，避免拖慢首屏
 const EmotionNebula = defineAsyncComponent(() => import('./components/EmotionNebula.vue'))
+
+// ---- 生日蛋糕特效（全页面生效） ----
+const showBirthdayCake = ref(false)
+function triggerBirthdayEffect() {
+  showBirthdayCake.value = true
+  setTimeout(() => { showBirthdayCake.value = false }, 3000)
+}
+
+watch(identity, () => {
+  if (identity.value === 'user_a') {
+    nextTick(() => triggerBirthdayEffect())
+  }
+})
 
 // ---- 全局状态 ----
 const activeTab = ref(0) // 0 朋友圈 / 1 秘密基地 / 2 我的
@@ -194,6 +207,15 @@ onUnmounted(() => {
       cancel-text="取消"
       @select="switchIdentity"
     />
+
+    <!-- 生日蛋糕全屏特效 -->
+    <div v-if="showBirthdayCake" class="birthday-cake-overlay" @click="showBirthdayCake = false">
+      <div class="cake-container">
+        <div class="cake">🎂</div>
+        <div class="cake-text">Happy Birthday!</div>
+        <div class="cake-subtext">祝你生日快乐 🎉</div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -373,6 +395,53 @@ onUnmounted(() => {
 .tab-icon {
   font-size: 20px;
   line-height: 1;
+}
+
+/* 生日蛋糕全屏特效 */
+.birthday-cake-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  animation: cakeFadeIn 0.3s ease-out;
+}
+@keyframes cakeFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.cake-container {
+  text-align: center;
+  animation: cakePop 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+}
+@keyframes cakePop {
+  from { transform: scale(0.3) translateY(40px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.cake {
+  font-size: 120px;
+  margin-bottom: 20px;
+  animation: cakeBounce 0.6s 0.3s ease-in-out infinite alternate;
+}
+@keyframes cakeBounce {
+  from { transform: scale(1) rotate(-3deg); }
+  to { transform: scale(1.08) rotate(3deg); }
+}
+.cake-text {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffd93d;
+  text-shadow: 0 2px 12px rgba(255, 217, 61, 0.5);
+  margin-bottom: 8px;
+}
+.cake-subtext {
+  display: block;
+  font-size: 18px;
+  color: #fff;
+  opacity: 0.95;
 }
 
 /* ============ 子页上滑过渡 ============ */

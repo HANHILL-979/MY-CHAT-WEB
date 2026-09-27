@@ -734,11 +734,11 @@ onUnmounted(() => {
   margin: 16px 16px 16px;
   border-radius: 28px;
   overflow: hidden;
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
   animation: heroRise 0.5s cubic-bezier(0.23, 1, 0.32, 1) both;
   flex-shrink: 0;
 }

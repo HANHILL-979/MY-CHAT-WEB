@@ -30,13 +30,6 @@ const roleDesc = computed(() =>
 const myPokes = computed(() => (identity.value === 'user_a' ? pokeCountA.value : pokeCountB.value))
 const partnerPokes = computed(() => (identity.value === 'user_a' ? pokeCountB.value : pokeCountA.value))
 
-// ---- 生日蛋糕特效 ----
-const showBirthdayCake = ref(false)
-function triggerBirthdayEffect() {
-  showBirthdayCake.value = true
-  setTimeout(() => { showBirthdayCake.value = false }, 3000)
-}
-
 function goPage(name) {
   emit('open-page', name)
 }
@@ -133,10 +126,6 @@ watch(
 onMounted(() => {
   startReceivingPokes()
   fetchPokeStats()
-  // 切换到女生账号时触发蛋糕特效
-  if (identity.value === 'user_a') {
-    triggerBirthdayEffect()
-  }
 })
 
 onUnmounted(() => {
@@ -148,15 +137,6 @@ onUnmounted(() => {
   <div class="mine-page scroll-area" :class="themeClass">
     <!-- 女性视角 -->
     <template v-if="theme !== 'male'">
-      <!-- 生日蛋糕特效 -->
-      <div v-if="showBirthdayCake" class="birthday-cake-overlay" @click="showBirthdayCake = false">
-        <div class="cake-container">
-          <div class="cake">🎂</div>
-          <div class="cake-text">Happy Birthday!</div>
-          <div class="cake-subtext">祝你生日快乐 🎉</div>
-        </div>
-      </div>
-
       <div class="profile-card" @click="emit('switch-role')">
         <div class="profile-left">
           <div class="avatar-wrap">
@@ -406,11 +386,11 @@ onUnmounted(() => {
   padding: 18px;
   border-radius: 28px;
   margin-bottom: 16px;
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
 }
 .profile-card::after {
@@ -484,12 +464,12 @@ onUnmounted(() => {
   padding: 16px;
   border-radius: 22px;
   cursor: pointer;
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
-.theme-female .action-card { background: rgba(255, 255, 255, 0.12); }
+.theme-female .action-card { background: rgba(255, 255, 255, 0.06); }
 .card-icon {
   width: 46px;
   height: 46px;
@@ -515,10 +495,10 @@ onUnmounted(() => {
   padding: 18px;
   border-radius: 24px;
   margin-bottom: 16px;
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
 }
 .menu-title { display: block; font-size: 14px; font-weight: 800; margin-bottom: 12px; color: #fff; }
 .menu-item {
@@ -538,50 +518,7 @@ onUnmounted(() => {
 
 /* 生日蛋糕特效 */
 .birthday-cake-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  animation: cakeFadeIn 0.3s ease-out;
-}
-@keyframes cakeFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.cake-container {
-  text-align: center;
-  animation: cakePop 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
-}
-@keyframes cakePop {
-  from { transform: scale(0.3) translateY(40px); opacity: 0; }
-  to { transform: scale(1) translateY(0); opacity: 1; }
-}
-.cake {
-  font-size: 120px;
-  margin-bottom: 20px;
-  animation: cakeBounce 0.6s 0.3s ease-in-out infinite alternate;
-}
-@keyframes cakeBounce {
-  from { transform: scale(1) rotate(-3deg); }
-  to { transform: scale(1.08) rotate(3deg); }
-}
-.cake-text {
-  display: block;
-  font-size: 28px;
-  font-weight: 800;
-  color: #ffd93d;
-  text-shadow: 0 2px 12px rgba(255, 217, 61, 0.5);
-  margin-bottom: 8px;
-}
-.cake-subtext {
-  display: block;
-  font-size: 18px;
-  color: #fff;
-  opacity: 0.9;
+  display: none;
 }
 
 /* 男性视角（iOS 设置页风） */
