@@ -5,6 +5,7 @@ import { supabase } from '../supabase'
 import { identity, identityProfiles, displayName } from '../identity'
 import { theme } from '../theme'
 import { vibrate } from '../utils/image'
+import { triggerBirthdayEffect } from '../utils/birthday'
 
 const props = defineProps({
   active: { type: Boolean, default: true },
@@ -126,6 +127,10 @@ watch(
 onMounted(() => {
   startReceivingPokes()
   fetchPokeStats()
+  // 女生账号打开页面时触发蛋糕特效
+  if (identity.value === 'user_a') {
+    triggerBirthdayEffect()
+  }
 })
 
 onUnmounted(() => {

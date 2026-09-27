@@ -6,6 +6,7 @@ import { identity } from '../identity'
 import { theme } from '../theme'
 import { getTimestamp } from '../utils/time'
 import { pickAndCompress } from '../utils/image'
+import { triggerBirthdayEffect } from '../utils/birthday'
 
 const emit = defineEmits(['close'])
 
@@ -257,6 +258,7 @@ function getMoodName(key) {
 
 onMounted(() => {
   fetchMonthDiaries()
+  if (identity.value === 'user_a') triggerBirthdayEffect()
 })
 </script>
 

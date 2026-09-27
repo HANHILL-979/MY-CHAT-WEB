@@ -1,9 +1,10 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, defineAsyncComponent, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, defineAsyncComponent, watch, nextTick } from 'vue'
 import { showToast } from 'vant'
 import { supabase } from './supabase'
 import { identity, identityProfiles, identityNames } from './identity'
 import { theme, setTheme } from './theme'
+import { getShowBirthdayCake } from './utils/birthday'
 import ChatRoom from './components/ChatRoom.vue'
 import MomentCircle from './components/MomentCircle.vue'
 import MinePage from './components/MinePage.vue'
@@ -15,18 +16,8 @@ import QuizGame from './components/QuizGame.vue'
 // 情绪星云依赖 three.js（约 600KB），按需异步加载，避免拖慢首屏
 const EmotionNebula = defineAsyncComponent(() => import('./components/EmotionNebula.vue'))
 
-// ---- 生日蛋糕特效（全页面生效） ----
-const showBirthdayCake = ref(false)
-function triggerBirthdayEffect() {
-  showBirthdayCake.value = true
-  setTimeout(() => { showBirthdayCake.value = false }, 3000)
-}
-
-watch(identity, () => {
-  if (identity.value === 'user_a') {
-    nextTick(() => triggerBirthdayEffect())
-  }
-})
+// ---- 生日蛋糕特效（各页面调用） ----
+const showBirthdayCake = getShowBirthdayCake()
 
 // ---- 全局状态 ----
 const activeTab = ref(0) // 0 朋友圈 / 1 秘密基地 / 2 我的
@@ -211,9 +202,9 @@ onUnmounted(() => {
     <!-- 生日蛋糕全屏特效 -->
     <div v-if="showBirthdayCake" class="birthday-cake-overlay" @click="showBirthdayCake = false">
       <div class="cake-container">
-        <div class="cake">🎂</div>
-        <div class="cake-text">Happy Birthday!</div>
-        <div class="cake-subtext">祝你生日快乐 🎉</div>
+        <img class="birthday-photo" src="/female-bg.jpg" alt="" />
+        <div class="cake-text">王树雅，祝你20岁生日快乐</div>
+        <div class="cake-subtext">Happy 20th Birthday!</div>
       </div>
     </div>
   </div>
@@ -420,14 +411,19 @@ onUnmounted(() => {
   from { transform: scale(0.3) translateY(40px); opacity: 0; }
   to { transform: scale(1) translateY(0); opacity: 1; }
 }
-.cake {
-  font-size: 120px;
-  margin-bottom: 20px;
-  animation: cakeBounce 0.6s 0.3s ease-in-out infinite alternate;
+.birthday-photo {
+  width: 280px;
+  height: 280px;
+  object-fit: cover;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  margin-bottom: 24px;
+  animation: photoFlash 0.6s ease-out;
 }
-@keyframes cakeBounce {
-  from { transform: scale(1) rotate(-3deg); }
-  to { transform: scale(1.08) rotate(3deg); }
+@keyframes photoFlash {
+  0% { transform: scale(0.5); opacity: 0; filter: brightness(2); }
+  60% { transform: scale(1.05); opacity: 1; filter: brightness(1.1); }
+  100% { transform: scale(1); filter: brightness(1); }
 }
 .cake-text {
   display: block;

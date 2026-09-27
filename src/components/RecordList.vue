@@ -6,6 +6,7 @@ import { identity } from '../identity'
 import { theme } from '../theme'
 import { getTimestamp, formatDateTime } from '../utils/time'
 import { pickImages, compressImage } from '../utils/image'
+import { triggerBirthdayEffect } from '../utils/birthday'
 
 const emit = defineEmits(['close'])
 
@@ -156,6 +157,7 @@ function goBack() {
 onMounted(() => {
   initList()
   fetchStatus()
+  if (identity.value === 'user_a') triggerBirthdayEffect()
 })
 </script>
 

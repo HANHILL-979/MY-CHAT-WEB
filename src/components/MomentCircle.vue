@@ -6,6 +6,7 @@ import { identity, identityProfiles, displayName, nameOf } from '../identity'
 import { theme } from '../theme'
 import { getTimestamp, formatMomentTime } from '../utils/time'
 import { pickAndCompress } from '../utils/image'
+import { triggerBirthdayEffect } from '../utils/birthday'
 
 const props = defineProps({
   active: { type: Boolean, default: true },
@@ -390,6 +391,10 @@ onMounted(() => {
   loadFromLocal()
   getCloudMoments()
   startPolling()
+  // 女生账号打开页面时触发蛋糕特效
+  if (identity.value === 'user_a') {
+    triggerBirthdayEffect()
+  }
 })
 
 onUnmounted(() => {
