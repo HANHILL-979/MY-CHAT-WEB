@@ -30,6 +30,13 @@ const roleDesc = computed(() =>
 const myPokes = computed(() => (identity.value === 'user_a' ? pokeCountA.value : pokeCountB.value))
 const partnerPokes = computed(() => (identity.value === 'user_a' ? pokeCountB.value : pokeCountA.value))
 
+// ---- 生日蛋糕特效 ----
+const showBirthdayCake = ref(false)
+function triggerBirthdayEffect() {
+  showBirthdayCake.value = true
+  setTimeout(() => { showBirthdayCake.value = false }, 3000)
+}
+
 function goPage(name) {
   emit('open-page', name)
 }
@@ -126,6 +133,10 @@ watch(
 onMounted(() => {
   startReceivingPokes()
   fetchPokeStats()
+  // 切换到女生账号时触发蛋糕特效
+  if (identity.value === 'user_a') {
+    triggerBirthdayEffect()
+  }
 })
 
 onUnmounted(() => {
@@ -137,6 +148,15 @@ onUnmounted(() => {
   <div class="mine-page scroll-area" :class="themeClass">
     <!-- 女性视角 -->
     <template v-if="theme !== 'male'">
+      <!-- 生日蛋糕特效 -->
+      <div v-if="showBirthdayCake" class="birthday-cake-overlay" @click="showBirthdayCake = false">
+        <div class="cake-container">
+          <div class="cake">🎂</div>
+          <div class="cake-text">Happy Birthday!</div>
+          <div class="cake-subtext">祝你生日快乐 🎉</div>
+        </div>
+      </div>
+
       <div class="profile-card" @click="emit('switch-role')">
         <div class="profile-left">
           <div class="avatar-wrap">
@@ -357,29 +377,15 @@ onUnmounted(() => {
   min-height: 0;
 }
 .theme-female {
-  background: linear-gradient(180deg, #fffaf4 0%, #f6eef7 100%);
+  background:
+    linear-gradient(180deg, rgba(10, 10, 15, 0.25) 0%, rgba(10, 10, 15, 0.40) 50%, rgba(10, 10, 15, 0.55) 100%),
+    url('/female-bg.jpg') center / cover no-repeat;
 }
 .theme-female::before {
-  content: "";
-  position: absolute;
-  top: -80px;
-  right: -80px;
-  width: 220px;
-  height: 220px;
-  background: radial-gradient(circle, rgba(255, 183, 197, 0.6), transparent 65%);
-  opacity: 0.9;
-  pointer-events: none;
+  content: none;
 }
 .theme-female::after {
-  content: "";
-  position: absolute;
-  bottom: 80px;
-  left: -60px;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(255, 217, 61, 0.35), transparent 60%);
-  opacity: 0.7;
-  pointer-events: none;
+  content: none;
 }
 .theme-male {
   background: var(--ios-bg);
@@ -400,9 +406,11 @@ onUnmounted(() => {
   padding: 18px;
   border-radius: 28px;
   margin-bottom: 16px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 18px 36px rgba(129, 100, 160, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.12);
   cursor: pointer;
 }
 .profile-card::after {
@@ -426,27 +434,27 @@ onUnmounted(() => {
 }
 .avatar { width: 100%; height: 100%; border-radius: 22px; object-fit: cover; }
 .profile-meta { flex: 1; min-width: 0; }
-.profile-name { display: block; font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.profile-name { display: block; font-size: 22px; font-weight: 800; margin-bottom: 4px; color: #fff; }
 .profile-role {
   display: inline-flex;
   font-size: 12px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(255, 183, 197, 0.35);
-  color: #6b4b5a;
+  background: rgba(255, 183, 197, 0.25);
+  color: #fff;
   margin-bottom: 8px;
 }
-.profile-desc { display: block; font-size: 13px; line-height: 1.7; color: #7b6579; }
+.profile-desc { display: block; font-size: 13px; line-height: 1.7; color: rgba(255, 255, 255, 0.85); }
 .badge-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .badge-pill {
   font-size: 11px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.75);
-  color: #8a6a7f;
-  border: 1px solid rgba(255, 183, 197, 0.35);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
-.badge-pill.soft { background: rgba(255, 217, 61, 0.18); border-color: rgba(255, 217, 61, 0.35); }
+.badge-pill.soft { background: rgba(255, 217, 61, 0.15); border-color: rgba(255, 217, 61, 0.3); }
 .profile-right { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .sweet-chip {
   font-size: 11px;
@@ -472,8 +480,16 @@ onUnmounted(() => {
 
 /* 功能入口宫格 */
 .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
-.action-card { padding: 16px; border-radius: 22px; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06); cursor: pointer; }
-.theme-female .action-card { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 183, 197, 0.25); }
+.action-card {
+  padding: 16px;
+  border-radius: 22px;
+  cursor: pointer;
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.theme-female .action-card { background: rgba(255, 255, 255, 0.12); }
 .card-icon {
   width: 46px;
   height: 46px;
@@ -483,21 +499,28 @@ onUnmounted(() => {
   justify-content: center;
   font-size: 22px;
   margin-bottom: 10px;
-  box-shadow: 0 8px 18px rgba(255, 183, 197, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
-.diary-card .card-icon { background: linear-gradient(135deg, rgba(255, 183, 197, 0.35), rgba(255, 255, 255, 0.8)); }
-.record-card .card-icon { background: linear-gradient(135deg, rgba(255, 217, 61, 0.35), rgba(255, 255, 255, 0.8)); }
-.gacha-card .card-icon { background: linear-gradient(135deg, rgba(255, 154, 158, 0.32), rgba(255, 255, 255, 0.8)); }
-.quiz-card .card-icon { background: linear-gradient(135deg, rgba(143, 211, 244, 0.32), rgba(255, 255, 255, 0.8)); }
-.nebula-card .card-icon { background: linear-gradient(135deg, rgba(161, 140, 209, 0.38), rgba(48, 43, 99, 0.5)); }
-.poke-card .card-icon { background: linear-gradient(135deg, rgba(255, 183, 197, 0.3), rgba(255, 217, 61, 0.2)); }
+.diary-card .card-icon { background: linear-gradient(135deg, rgba(255, 183, 197, 0.3), rgba(255, 255, 255, 0.15)); }
+.record-card .card-icon { background: linear-gradient(135deg, rgba(255, 217, 61, 0.3), rgba(255, 255, 255, 0.15)); }
+.gacha-card .card-icon { background: linear-gradient(135deg, rgba(255, 154, 158, 0.3), rgba(255, 255, 255, 0.15)); }
+.quiz-card .card-icon { background: linear-gradient(135deg, rgba(143, 211, 244, 0.3), rgba(255, 255, 255, 0.15)); }
+.nebula-card .card-icon { background: linear-gradient(135deg, rgba(161, 140, 209, 0.35), rgba(48, 43, 99, 0.4)); }
+.poke-card .card-icon { background: linear-gradient(135deg, rgba(255, 183, 197, 0.25), rgba(255, 217, 61, 0.2)); }
 .card-title { display: block; font-size: 15px; font-weight: 800; margin-bottom: 4px; color: #4b3046; }
 .card-desc { display: block; font-size: 11px; opacity: 0.7; color: #4b3046; }
 
 /* 专属密码菜单 */
-.menu-group { padding: 18px; border-radius: 24px; margin-bottom: 16px; }
-.theme-female .menu-group { background: rgba(255, 255, 255, 0.72); }
-.menu-title { display: block; font-size: 14px; font-weight: 800; margin-bottom: 12px; color: #4b3046; }
+.menu-group {
+  padding: 18px;
+  border-radius: 24px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.12);
+}
+.menu-title { display: block; font-size: 14px; font-weight: 800; margin-bottom: 12px; color: #fff; }
 .menu-item {
   display: flex;
   justify-content: space-between;
@@ -506,10 +529,60 @@ onUnmounted(() => {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 .menu-item:last-child { border-bottom: none; }
-.label { font-size: 14px; color: #4b3046; }
-.value { font-size: 13px; opacity: 0.72; color: #4b3046; }
+.label { font-size: 14px; color: #fff; }
+.value { font-size: 13px; opacity: 0.8; color: #fff; }
+.card-title { display: block; font-size: 15px; font-weight: 800; margin-bottom: 4px; color: #fff; }
+.card-desc { display: block; font-size: 11px; opacity: 0.7; color: rgba(255, 255, 255, 0.8); }
 
-.footer-text { text-align: center; font-size: 12px; opacity: 0.6; margin: 8px 0 16px; }
+.footer-text { text-align: center; font-size: 12px; opacity: 0.6; margin: 8px 0 16px; color: var(--female-text); }
+
+/* 生日蛋糕特效 */
+.birthday-cake-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  animation: cakeFadeIn 0.3s ease-out;
+}
+@keyframes cakeFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.cake-container {
+  text-align: center;
+  animation: cakePop 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+}
+@keyframes cakePop {
+  from { transform: scale(0.3) translateY(40px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.cake {
+  font-size: 120px;
+  margin-bottom: 20px;
+  animation: cakeBounce 0.6s 0.3s ease-in-out infinite alternate;
+}
+@keyframes cakeBounce {
+  from { transform: scale(1) rotate(-3deg); }
+  to { transform: scale(1.08) rotate(3deg); }
+}
+.cake-text {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffd93d;
+  text-shadow: 0 2px 12px rgba(255, 217, 61, 0.5);
+  margin-bottom: 8px;
+}
+.cake-subtext {
+  display: block;
+  font-size: 18px;
+  color: #fff;
+  opacity: 0.9;
+}
 
 /* 男性视角（iOS 设置页风） */
 .console-hero {

@@ -28,10 +28,13 @@ body {
 }
 
 /* ============ 双主题系统（复刻 Linda1） ============ */
-/* 女性视角：治愈系 · 云端呼吸 */
+/* 女性视角：治愈系 · 云端呼吸 · 苹果玻璃质感 */
 .theme-female {
   font-family: "ZCOOL XiaoWei", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, sans-serif;
-  color: #4b3046;
+  color: #ffffff;
+  --female-bg: transparent;
+  --female-surface: rgba(255, 255, 255, 0.12);
+  --female-text: #ffffff;
 }
 
 /* 男性视角：日落玻璃 · 苹果液态玻璃质感（Liquid Glass / vibrancy） */

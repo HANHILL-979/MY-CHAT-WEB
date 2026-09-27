@@ -692,7 +692,9 @@ onUnmounted(() => {
   overflow: hidden;
 }
 .theme-female {
-  background: linear-gradient(180deg, #fffdf5 0%, #ffe7ef 34%, #f7f8ff 100%);
+  background:
+    linear-gradient(180deg, rgba(10, 10, 15, 0.25) 0%, rgba(10, 10, 15, 0.40) 50%, rgba(10, 10, 15, 0.55) 100%),
+    url('/female-bg.jpg') center / cover no-repeat;
 }
 .theme-male {
   background: var(--ios-bg);
@@ -726,14 +728,17 @@ onUnmounted(() => {
   animation-delay: calc(min(var(--i, 0), 8) * 40ms);
 }
 
-/* 女性视角 hero */
+/* 女性视角 hero - 玻璃卡片 */
 .theme-female .hero {
   position: relative;
   margin: 16px 16px 16px;
   border-radius: 28px;
   overflow: hidden;
-  background: linear-gradient(135deg, rgba(255, 166, 201, 0.92), rgba(144, 141, 255, 0.92));
-  box-shadow: 0 18px 40px rgba(114, 84, 177, 0.18);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.12);
   animation: heroRise 0.5s cubic-bezier(0.23, 1, 0.32, 1) both;
   flex-shrink: 0;
 }
@@ -746,9 +751,9 @@ onUnmounted(() => {
 }
 .theme-female .hero-inner { position: relative; padding: 22px; display: flex; justify-content: space-between; gap: 16px; align-items: flex-end; }
 .theme-female .hero-copy { color: #fff; max-width: 62%; }
-.theme-female .eyebrow { display: block; font-size: 11px; letter-spacing: 2px; opacity: 0.82; margin-bottom: 8px; }
-.theme-female .title { display: block; font-size: 30px; font-weight: 800; line-height: 1.1; margin-bottom: 8px; }
-.theme-female .subtitle { display: block; font-size: 13px; line-height: 1.6; opacity: 0.92; }
+.theme-female .eyebrow { display: block; font-size: 11px; letter-spacing: 2px; color: #fff; margin-bottom: 8px; }
+.theme-female .title { display: block; font-size: 30px; font-weight: 800; line-height: 1.1; margin-bottom: 8px; color: #fff; }
+.theme-female .subtitle { display: block; font-size: 13px; line-height: 1.6; color: rgba(255, 255, 255, 0.9); }
 .theme-female .hero-card {
   width: 100px;
   padding: 12px;
